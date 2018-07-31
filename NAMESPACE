@@ -1,0 +1,55 @@
+### Generics and functions defined in this package
+
+# predict.VFP is required
+
+export(
+	"as.rgb",
+	"fit.vfp",
+	"print.VFP",
+	"summary.VFP",
+	"plot.VFP",
+	"predict.VFP",
+	"predictMean",
+	"getMat.VCA",
+	"coef.VFP",
+	"legend.rm",
+	"powfun2simple",
+	"powfun3",
+	"powfun3simple",
+	"powfun4",
+	"powfun4simple",
+	"powfun5",
+	"powfun5simple",
+	"powfun6",
+	"powfun6simple",
+	"powfun7",
+	"powfun7simple",
+	"powfun8",
+	"powfun8simple",
+	"powfun9simple",
+	"conditionHandler"
+)
+
+### Packages which are imported (appearing in the Description->Imports enumeration)
+
+import( 
+	"graphics",
+	"grDevices",
+	"stats",
+	"gnm"
+)
+
+#importFrom("gnm", "gnm")
+importFrom("MASS", "gamma.dispersion")
+importFrom("utils", "capture.output")
+
+### exported classes
+
+exportClasses( 	"VFP"
+		)
+
+S3method(print, VFP)
+S3method(summary, VFP)
+S3method(predict, VFP)
+S3method(plot, VFP)
+S3method(coef, VFP)
