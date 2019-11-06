@@ -1,0 +1,11 @@
+Version 1.1
+-----------
+
+- fixed issue with 'alpha' not having any effect when being set different from the default in function 'plot.VFP'
+- added function 'deriveCx' for derivation of sample-concentration at which a pre-defined proportion of repeated
+  measurements would fall above the cutoff, e.g. C5 or C95
+
+Version 1.0
+-----------
+
+- initial version put on CRAN

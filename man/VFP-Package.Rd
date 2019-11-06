@@ -4,7 +4,7 @@
 \alias{VFP-package}
 \title{(V)ariance (F)unction (P)rogram}
 \description{
- The intended use of this package is to implement variance functions proposed in Sadler's VFP standalone software 
+ The intended use of this package is to implement variance functions proposed in Sadler's VFP stand-alone software 
  (see reference below), from which the name was borrowed as well. 
  Main function of this package is \code{\link{fit.vfp}} for fitting non-linear variance-function
  models. Usually, these models are fitted to analysis-results of precision performance data e.g.
@@ -20,8 +20,8 @@
   \tabular{ll}{
     Package: \tab VFP\cr
     Type: \tab Package \cr
-    Version: \tab 1.0 \cr
-    Date: \tab 2018-07-30\cr
+    Version: \tab 1.1 \cr
+    Date: \tab 2019-11-06\cr
     License:  \tab GPL (>=3) \cr
     LazyLoad: \tab yes \cr
   }

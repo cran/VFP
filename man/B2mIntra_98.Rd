@@ -6,7 +6,7 @@
   Results in this file are all serum/CSF clinical specimen duplicates during 1998 from a low throughput Beta-2-microglobulin RIA.
 
 }
-\usage{B2mIntra_98}
+\usage{data(B2mIntra_98)}
 \format{data.frame with 554 observations and 2 variables.}
 \references{
        VFP Program Version 12.0\\

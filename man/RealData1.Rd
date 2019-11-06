@@ -8,7 +8,7 @@
  as input for function 'fit.vfp'. Different samples are indicated by variable
  "No".
 }
-\usage{RealData1}
+\usage{data(RealData1)}
 \format{data.frame with 10 observations and 6 variables.}
 \keyword{datasets}
 

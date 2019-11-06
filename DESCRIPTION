@@ -1,6 +1,6 @@
 Package: VFP
-Version: 1.0
-Date: 2018-07-30
+Version: 1.1
+Date: 2019-11-06
 Title: Variance Function Program
 Author: Andre Schuetzenmeister [cre, aut],
   Florian Dufey [aut],
@@ -21,6 +21,6 @@ Description: Variance function estimation for models proposed by W. Sadler in hi
 			is of great importance when individual test-results are used for defining follow-up treatment of patients.  
 License: GPL (>= 2)
 NeedsCompilation: no
-Packaged: 2018-07-30 15:06:36 UTC; schueta6
+Packaged: 2019-11-06 18:50:09 UTC; schueta6
 Repository: CRAN
-Date/Publication: 2018-07-31 09:40:09 UTC
+Date/Publication: 2019-11-06 19:10:02 UTC

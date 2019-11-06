@@ -14,6 +14,9 @@ fitted models}
 
 \item{...}{additional parameters passed forward}
 }
+\value{
+(numeric) model coefficients
+}
 \description{
 Extract Model-Coefficients from VFP-Objects.
 }

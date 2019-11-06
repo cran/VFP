@@ -8,7 +8,7 @@
   per day and 2 replicates per run, i.e. there are 8 (sample) x 3 (sites/labs) x
   12 (days) x 2 (runs) x 2 (replicates) = 1152 observations overall.
 }
-\usage{ReproData}
+\usage{data(ReproData)}
 \format{data.frame with 1152 observations and 5 variables.}
 
 \keyword{datasets}

@@ -10,7 +10,7 @@
   should be imposed in preference to accepting the fit of one of the flexible functions.
 
 }
-\usage{Glucose}
+\usage{data(Glucose)}
 \format{data.frame with 206 observations and 2 variables.}
 \references{
        VFP Program Version 12.0\\

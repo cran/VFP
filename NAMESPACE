@@ -27,7 +27,8 @@ export(
 	"powfun8",
 	"powfun8simple",
 	"powfun9simple",
-	"conditionHandler"
+	"conditionHandler",
+	"deriveCx"
 )
 
 ### Packages which are imported (appearing in the Description->Imports enumeration)

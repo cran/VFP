@@ -5,7 +5,7 @@
 \description{
   Clinical specimen T4 RIA duplicates produced during 1999 by a staff member.
 }
-\usage{T4S9_99}
+\usage{data(T4S9_99)}
 \format{data.frame with 8553 observations and 2 variables.}
 \references{
        VFP Program Version 12.0\\

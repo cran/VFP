@@ -556,11 +556,32 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 		startvals <- NULL
 	
 	if(col.mean != "Mean")
+	{
+		if("Mean" %in% cn)
+		{
+			Data <- Data[,-which(colnames(Data) == "Mean")]
+			cn	 <- colnames(Data)
+		}
 		colnames(Data)[which(cn == col.mean)] <- "Mean"
+	}
 	if(col.var != "VC")
+	{
+		if("VC" %in% cn)
+		{
+			Data <- Data[,-which(colnames(Data) == "VC")]
+			cn	 <- colnames(Data)
+		}
 		colnames(Data)[which(cn == col.var)] <- "VC"
+	}
 	if(col.df != "DF")
+	{
+		if("DF" %in% cn)
+		{
+			Data <- Data[,-which(colnames(Data) == "DF")]
+			cn	 <- colnames(Data)
+		}
 		colnames(Data)[which(cn == col.df)] <- "DF"
+	}
 	
 	ind.NA <- which(apply(Data[c("Mean", "VC", "DF")], 1, function(x) any(is.na(x))))
 	if(length(ind.NA) > 0)
@@ -1620,9 +1641,9 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 	if(use.log)
 		xval <- log(xval)
 	
-	# call predict.gnm directly here
+	# call predict.VFP here
 	preds	<- predict(	obj, model.no=model.no, newdata=xval, dispersion=dispersion, type=type, 
-						CI.method=CI.method, use.log=use.log)
+						CI.method=CI.method, use.log=use.log, alpha=alpha)
 
 	Np <- nrow(preds)				
 				
@@ -2157,6 +2178,8 @@ print.VFP <- function(x, model.no=NULL, digits=4, ...)
 #' @author 	Andre Schuetzenmeister \email{andre.schuetzenmeister@@roche.com}
 #' 			Florian Dufey \email{florian.dufey@@roche.com}
 #' 
+#' @return (numeric) model coefficients
+#' 
 #' @examples 
 #' \donttest{
 #' library(VCA)
@@ -2381,6 +2404,104 @@ t.coef <- function(coeffs0, K=NULL, Maxi=NULL, model=NULL, signJ=NULL, eps=sqrt(
 	}
 	
 	coeffs
+}
+
+
+
+#' Determine C5 and C95 or any Concentration Cx.
+#' 
+#' This function makes use of a precision profile, determining the
+#' concentration of that sample when measured a large number of times,
+#' 100 * 'Cx'\\% of the measurements lie above 'cutoff'. In case of e.g.
+#' "C5" exactly 5\\% of will be above cutoff, whereas for "C95" 95\\% will
+#' be larger than cutoff.
+#' 
+#' @param vfp		(VFP) object representing a precision profile to be used
+#' @param model.no	(integer) specifying which model to use, if NULL the "best"
+#' 					model will be used automatically
+#' @param start		(numeric) start concentration, e.g. for C5 smaller than r,
+#' 					for C95 larger than R
+#' @param cutoff	(numeric) the cutoff of to be used
+#' @param Cx		(numeric) the probability, e.g. for C5 use 0.05 and for 
+#' 					C95 use 0.95
+#' @param tol		(numeric) tolerance value determining when the iterative
+#' 					bisections search can terminate, i.e. when the difference
+#' 					becomes smalle enough
+#' @param plot		(logical) TRUE = plot the result
+#' 
+#' @return (numeric) Mean and SD of concentration Cx
+#' 
+#' @author Andre Schuetzenmeister \email{andre.schuetzenmeister@@roche.com}
+#' 
+#' @examples 
+#' \dontrun{
+#' # perform variance component analysis
+#' library(VCA)
+#' data(VCAdata1)
+#' # perform VCA-anaylsis
+#' lst <- anovaVCA(y~(device+lot)/day/run, VCAdata1, by="sample")
+#' # transform list of VCA-objects into required matrix
+#' mat <- getMat.VCA(lst)		# automatically selects "total"
+#' mat
+#' # fit all 9 models batch-wise
+#' res <- fit.vfp(model.no=1:10, Data=mat)
+#' # now search for the C5 concentration
+#' deriveCx(res, start=15, cutoff=20, Cx=0.05, plot=TRUE)
+#' deriveCx(res, start=25, cutoff=20, Cx=0.95, plot=TRUE)
+#' deriveCx(res, start=25, cutoff=20, Cx=0.25, plot=TRUE)
+#' deriveCx(res, start=25, cutoff=20, Cx=0.75, plot=TRUE)
+#' }
+
+deriveCx <- function(vfp, model.no=NULL, start, cutoff, Cx=.05, tol=1e-6, plot=FALSE)
+{
+	stopifnot(class(vfp) == "VFP")
+	stopifnot(is.numeric(start))
+	stopifnot(is.numeric(cutoff))
+	stopifnot(Cx > 0 && Cx < 1)
+	Prob <- 1 - Cx
+	Mean <- start
+	
+	iter <- 1
+	
+	while(1)
+	{
+		SD 		<- predict(vfp, model.no=model.no, newdata=Mean, type="sd")$Fitted
+		tmpQ 	<- qnorm(p=Prob, mean=Mean, sd=SD)
+		Diff 	<- tmpQ - cutoff
+		
+		if(abs(Diff) < tol)			# tolerable difference to cutoff
+		{
+			if(plot)
+			{
+				h <- hist(rnorm(1e5, mean=Mean, sd=SD), nclass=50, main="", freq=FALSE, las=1, col="gray80",
+						border="white", 
+						xlab=paste0("Normal Distribution ~N(", round(Mean, 2), ",", round(SD,4),")"),
+						font.lab=3, cex.lab=1.5)
+				idx <- which(h$breaks >= cutoff)
+				for(i in idx)
+					rect(h$breaks[i], 0, h$breaks[i+1], h$density[i], col="gray50", border="white")
+				mtext(side=3, line=1, text=bquote(C[.(100*Cx)] == .(round(Mean, 2))), at=Mean, cex=1.25)
+				abline(v=cutoff, col="blue", lwd=3)
+				abline(v=qnorm(p=Prob, mean=Mean, sd=SD), col="red", lwd=3, lty=2)	
+				abline(v=Mean, lwd=3, lty=3)
+				legend( "right", col=c("black", "blue", "red"), lty=c(3, 1,2), lwd=c(3,3,3),
+						legend=c(as.expression(bquote(C[.(100*Cx)])), "Cutoff", paste0(100*Prob, "% Quantile")), box.lty=0)
+				legend( "topright", fill=c("gray80", "gray50"), border="white", 
+						legend=c("< Cutoff          ", "> Cutoff          "), box.lty=0)
+			}
+			res <- c(Mean=Mean, SD=SD)
+			return(res)
+		}
+		
+		if(Diff < 0)
+			Mean <- Mean + abs(Diff)/2
+		else
+			Mean <- Mean - abs(Diff)/2
+		
+		iter <- iter + 1
+		if(iter == 500)
+			break
+	}	
 }
 
 
