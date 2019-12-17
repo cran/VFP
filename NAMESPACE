@@ -28,7 +28,8 @@ export(
 	"powfun8simple",
 	"powfun9simple",
 	"conditionHandler",
-	"deriveCx"
+	"deriveCx",
+	"precisionPlot"
 )
 
 ### Packages which are imported (appearing in the Description->Imports enumeration)
@@ -43,6 +44,8 @@ import(
 #importFrom("gnm", "gnm")
 importFrom("MASS", "gamma.dispersion")
 importFrom("utils", "capture.output")
+importFrom("utils", "tail")
+importFrom("VCA", "stepwiseVCA")
 
 ### exported classes
 

@@ -1,3 +1,10 @@
+Version 1.2
+-----------
+
+- a package-vignette was integrated 
+- function 'precisionPlot" was added visualizing the relationship between
+  C5 and C95 concentrations, (im)precision and one or two cutoffs
+
 Version 1.1
 -----------
 

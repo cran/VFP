@@ -4,8 +4,7 @@
 \alias{addGrid}
 \title{Add a Grid to an Existing Plot.}
 \usage{
-addGrid(x = NULL, y = NULL, col = "lightgray", lwd = 1L,
-  lty = 3L)
+addGrid(x = NULL, y = NULL, col = "lightgray", lwd = 1L, lty = 3L)
 }
 \arguments{
 \item{x}{(integer, numeric) single integer specifies number of cells, numeric vector specifies vertical grid-lines}

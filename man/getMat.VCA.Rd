@@ -10,7 +10,9 @@ getMat.VCA(obj, vc = 1)
 \item{obj}{(list) of VCA-objects}
 
 \item{vc}{(integer, character) either an integer specifying a variance component
-or the name of a variance component}
+or the name of a variance component; can also be a vector of integers
+specifying a continuous sequence of variance components always including
+'error' (repeatability)}
 }
 \description{
 Transform list of VCA-object into VFP-matrix required for fitting.
@@ -20,8 +22,11 @@ Transform list of VCA-object into VFP-matrix required for fitting.
 library(VCA)
 data(VCAdata1)
 lst <- anovaVCA(y~(device+lot)/day/run, VCAdata1, by="sample")
-mat <- getMat.VCA(lst)
-mat
+getMat.VCA(lst)  # automatically selects 'total'
+# pooled version of intermediate precision (error+run+day)
+getMat.VCA(lst, 4:6)
+# only repeatability ('error')
+getMat.VCA(lst, "error")
 }
 }
 \author{

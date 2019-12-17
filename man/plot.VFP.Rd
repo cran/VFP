@@ -10,8 +10,8 @@
   Title = list(), Xlabel = list(), Ylabel = list(), Line = list(),
   Points = list(), Grid = list(), Crit = list(), ylim = NULL,
   Prediction = NULL, Pred.CI = NULL, Model = TRUE,
-  CI.method = c("chisq", "t", "normal"), use.log = FALSE,
-  Npred = 200, ...)
+  CI.method = c("chisq", "t", "normal"), use.log = FALSE, Npred = 200,
+  ...)
 }
 \arguments{
 \item{x}{(VFP) object as returned by function 'fit.vfp'}

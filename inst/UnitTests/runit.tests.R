@@ -3,6 +3,7 @@
 # Author: schueta6
 ###############################################################################
 
+library(VCA)
 
 ###
 data(MultiLotReproResults)
@@ -175,5 +176,42 @@ TF015.predictMean <- function(x)
 	checkEquals(res$Mean, 15.08867, tolerance=1e-6)
 	checkEquals(res$LCL,  6.532276, tolerance=1e-6)
 	checkEquals(res$UCL,  9272564, tolerance=1e-6)				# now upper bound found, max X-value returned with message
+}
+
+# Test whether sequences of variance components are correctly processed in function 'getMat.VCA'
+TF016.getMat.VCA_sequences <- function()
+{
+	data(VCAdata1, package="VCA")
+	lst <- anovaVCA(y~(lot+device)/day/run, VCAdata1, by="sample")
+	mat <- getMat.VCA(lst, 4:6)
+	mat <- mat[order(as.numeric(sub("sample.", "", rownames(mat)))),]
+	VC  <- sapply(lst, function(x) sum(x$aov.tab[4:6, "VC"]))
+	DF  <- sapply(lst, function(x){
+					Ci <- getMat(x, "Ci.MS")
+					Ci <- Ci[3:5, 3:5]
+					MS <- x$aov.tab[4:6, "MS"]
+					DF <- x$aov.tab[4:6, "DF"]
+					DF <- VCA:::SattDF(MS, Ci, DF, "total") 
+					DF
+				})
+	Mean <- sapply(lst, function(x) x$Mean)
+	checkEquals(mat[,"VC"],   as.numeric(VC))
+	checkEquals(mat[,"Mean"], as.numeric(Mean))
+	checkEquals(mat[,"DF"],   as.numeric(DF))
+}
+
+
+# Test whether sequences of variance components are correctly processed when
+# fitting VFP-models directly on a list of VCA-objects
+TF017.fit.vfp_VC_sequences <- function()
+{
+	data(VCAdata1, package="VCA")
+	lst 	<- anovaVCA(y~(lot+device)/day/run, VCAdata1, by="sample")
+	mat0 	<- getMat.VCA(lst, 4:6)
+	vfp		<- fit.vfp(lst, 1, vc=4:6)
+	mat1 	<- vfp$Data
+	checkEquals(mat0[,"VC"],   mat1[,"VC"])
+	checkEquals(mat0[,"Mean"], mat1[,"Mean"])
+	checkEquals(mat0[,"DF"],   mat1[,"DF"])
 }
 

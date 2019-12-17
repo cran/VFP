@@ -1,0 +1,351 @@
+---
+title: "Precision Profiles with R-Package **VFP**"
+author: "Andre Schuetzenmeister"
+date: "`r Sys.Date()`"
+
+#### Output options
+output: 
+#  pdf_document:
+#    toc: true
+#    fig_width: 7
+#    fig_height: 5
+  prettydoc::html_pretty:
+    theme: cayman
+    toc: true
+    toc_depth: 4
+    smart: false
+  vignette: >
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteIndexEntry{Precision Profiles with R-Package VFP}
+    %\usepackage[utf8]{inputenc}
+---
+
+
+```{r global_options, echo=FALSE, eval=TRUE}
+knitr::opts_chunk$set(fig.width=10, fig.height=7, fig.align='center', fig.path='figures/',
+                      echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE)
+```
+
+# Introduction
+
+R-package **VFP** is based on the ideas of the standalone software **Variance Function Program** by
+William A. Sadler [https://www.aacb.asn.au/resources/useful-tools/variance-function-program-v16].
+This is also the reason why we chose to name it **VFP** instead of e.g. RPP for R Precision Profiles
+or similar. 
+
+Precision profiles are a comprehensive and intuitive way to visualize variability over a part of or 
+the entire measuring range of a measuring method. Manufacturers of IVD-assays need to state the precision
+of their products in the method sheet (package insert). This is usually done in tabular format presenting
+total (im)precision and individual variance components at given concentrations of samples used in the 
+respective precision experiment. The units of variability reported are either standard deviation (SD) 
+and/ or coefficient of variation (CV) which is a percentage in regard to the sample concentration. 
+The drawback of using tables is obvious. Variability of any concentration in between two reported
+samples and not close to one of these is not immediately clear. 
+
+```{r Precision_Table, echo=FALSE}
+library(VFP)
+library(VCA)
+library(knitr)
+# CLSI EP05-A3 example data
+data(CA19_9)
+# fit VCA-model
+VCA.CA19_9 <- anovaVCA(result~site/day, CA19_9, by="sample")
+# create VCA-result table on CV-scale
+CV.tab <- t(sapply(VCA.CA19_9, function(x) round(x$aov.tab[, "CV[%]"], 1)))
+CV.tab <- cbind(sapply(VCA.CA19_9, function(x) signif(x$Mean, 4)), CV.tab)
+colnames(CV.tab) <- c("Mean", "Reproducibility %CV", "Between-Site %CV", "Between-Day %CV", "Repeatability %CV")
+kable(CV.tab, caption="Precision performance table as usually included in package insert.")
+```
+
+Additionally, any variability estimated is carrying more or less error in the same sense as data points
+in a regression analysis are not all located on the regression line. Precision profiles model the non-linear
+relationship between sample mean and variance taking into account the information provided by multiple 
+precision-experiments. Below, an example is given, showing the precision profile on CV-scale for 
+reproducibility variability of the *CA19_9* data set from R-package *VCA* (2nd column in table above):
+
+```{r Precision_Profile, echo=FALSE}
+VFP.CA19_9 <- fit.vfp(VCA.CA19_9, model.no=4)
+plot(VFP.CA19_9, type="cv", ylim=c(0, 12))
+```
+
+Each point in this plot corresponds to the reproducibility on CV[%] scale of one sample, i.e. there were
+six samples measured at three sites, on 5 days per site, and 5 replicated measurements per day. This data
+set corresponds to the numerical example of the *CLSI EP05-A3* guideline showing a typical form of a precision
+profile with larger relative variability for lower concentrations and an almost constant %CV for larger
+concentrations. The precision profile for this data is based on model 4, i.e. for this non-linear function
+the *Akaike Information Criterion* ($-2 \times logLik + 2 \times p$, *p* being the number of parameters)
+takes the lowest number. These are provided by R-package *gnm* which we chose for performing the actual model fitting.
+  
+  
+  
+# How To Generate a Precision Profile
+
+Any precision profile is based on the outcome of a precision experiment. The required input for fitting one
+of the models provided is *Mean*, *Variance* and the *Degrees of Freedom* for multiple samples used in the 
+precision experiment. Let's start with performing the analysis of such a precision experiment.
+
+ ```{r perform_VCA_1, echo=TRUE}
+library(VFP)
+library(VCA)
+# CLSI EP05-A3 example data
+data(CA19_9)
+```  
+
+Now perform the variance component analysis (VCA) for each sample using batch-processing. Here, we the *anovaVCA*
+function from R-package *VCA* is used.
+
+ ```{r perform_VCA_2, echo=TRUE}
+VCA.CA19_9 <- anovaVCA(result~site/day, CA19_9, by="sample")
+``` 
+
+The result will be a list of *VCA*-objects.
+
+ ```{r perform_VCA_3, echo=TRUE}
+class(VCA.CA19_9)
+sapply(VCA.CA19_9, class)
+print(VCA.CA19_9[[1]], digits=4)
+```  
+
+Each *VCA*-object stores the information for one sample and there are multiple types of variability which
+can be used to construct a precision profile. Total variability corresponds to *reproducibility* in this example.
+One can also use *repeatability* (error) which is the pure assay imprecision. If one decides to use the sum
+of repeatability and day-to-day (aka between-day, here "site:day") one uses intermediate precision or within-lab
+variability. The next code snippet shows how this information can be extracted from the list of VCA-objects.
+
+Function *getMat.VCA* does the job. Without selecting a specific element, i.e. variance component or sequence of these,
+total variability will be used by default.
+
+```{r extract_Info_1, echo=TRUE}
+mat.total <- getMat.VCA(VCA.CA19_9)
+print(mat.total)
+```  
+
+**Note**:  
+This input does not need to be derived from a variance component analysis performed with R-package **VCA**.
+One can can easily compile the required input from externally performed analyses as well.  
+  
+To extract *repeatability* one can either specify "error" or the index of this variance component which will be 4 here.
+
+```{r extract_Info_2, echo=TRUE}
+mat.rep <- getMat.VCA(VCA.CA19_9, "error")
+print(mat.rep)
+``` 
+
+In this example *Intermediate Precision* consists of two variance components, *repeatability* and *day-to-day*. 
+To select these specify the sequence of indexes. Note, that this will only be possible for models that were fitted
+using *ANOVA*-estimation, thus, any model fitted using *REML* will result in an error. 
+
+```{r extract_Info_3, echo=TRUE}
+mat.ip <- getMat.VCA(VCA.CA19_9, 3:4)
+print(mat.ip)
+```  
+
+The next step towards a precision profile consists of fitting a VFP-model. This can be done for a single model or
+in batch-mode. The latter means instead of fitting one model after another, one can select a set of models.
+There are 10 models implemented in R-package *VFP*:  
+
+1. $\sigma^2$, constant variance  
+2. $\sigma^2=\beta_1 \times u^2$, constant CV  
+3. $\sigma^2=\beta_1 + \beta_2 \times u^2$, mixed constant, proportional variance  
+4. $\sigma^2=(\beta_1 + \beta_2 \times u)^K$, constrained power model, constant exponent  
+5. $\sigma^2=\beta_1+\beta_2 \times u^K$, alternative constrained power model  
+6. $\sigma^2=\beta_1 + \beta_2 \times u + \beta_3 \times u^J$, unconstrained power model for variance functions with a minimum  
+7. $\sigma^2=\beta_1 + \beta_2 \times u^J$, alternative unconstrained power model  
+8. $\sigma^2=(\beta_1 + \beta_2 \times u)^J$, unconstrained power model (default model of W. Sadler)  
+9. $\sigma^2=\beta_1 \times u^J$, similar to CLSI EP17 model  
+10. $CV=\beta_1 \times u^J$, exact CLSI EP17 model (fitted by linear regression on logarithmic scale)  
+
+Fitting all ten models is somehow redundant if constant *K* is chosen to be equal to 2, since models 3 and 5 are equivalent
+and these are constrained versions of model 7 where the exponent is also estimated. The latter also applies to model 4 which
+is a constrained version of model 8. Nevertheless, since computation time is not critical here for typical precision-profiles
+(of in-vitro diagnostics precision experiments) we chose to offer batch-processing as well.  
+
+During computation, all models are internally re-parameterized so as to guarantee that the variance function is positive
+in the range of *u* from 0 to $u_{max}$. In models 7 and 8, *J* is restricted to $0.1 < J < 10$ to avoid the appearance of
+sharp hooks. Occasionally, these restrictions may lead to a failure of convergence. This is then a sign that the model
+parameters are on the boundary and that the model fits the data very badly. This should not be taken as reason for concern.
+It occurs frequently for model 6 when the variance function has no minimum, which is normally the case.  
+  
+If batch-processing has been performed, one can select one of the models or use the best fitting model 
+automatically if none is specified (see below) in all subsequent function calls on the returned *VFP*-object.  
+
+Below model 1 is fitted to the total variability data.
+
+```{r fit_VFP_model_1, echo=TRUE}
+ tot.m1 <- fit.vfp(mat.total, model.no=1)
+``` 
+  
+The standard *print*-method for *VCA*-objects is identical to the *summary*-method yielding:
+  
+```{r fit_VFP_model_2, echo=TRUE}
+tot.m1
+``` 
+
+Now, all ten available models are fitted to the total variability data in batch mode. Note, model 5 
+is skipped since it is identical to model 3 without changing the default setting *K=2* to something different.
+
+```{r fit_VFP_model_3, echo=TRUE}
+ tot.all <- fit.vfp(mat.total, 1:10)
+ # 'summary' presents more details for multi-model objects 
+ summary(tot.all)
+ ```
+   
+  
+  
+# Plotting Precision Profiles
+ 
+Our recommendation is to always fit all models and using the best one. Of course, if two fitted models are very
+similar in their AIC one can use the less complex model. The fitted model(s) is/are stored in a *VFP*-object. 
+Calling the plot-method for these objects will always generate a precision profile on variance scale (VC),
+which is the scale model fitting takes place on.
+
+ ```{r plot_VFP_model_VC, echo=TRUE}
+# not selecting a specific model automatically chooses the one with lowest AIC
+plot(tot.all)
+``` 
+  
+One can plot the precision profile on variance (type="vc", default), SD (type="sd") or CV (type="cv")
+scale.
+  
+```{r plot_VFP_model_CV, echo=TRUE}
+# selecting one specific model is easy
+plot(tot.all, model.no=7, type="cv", ylim=c(0, 10))
+``` 
+  
+There are plenty of options to customize the visual appearance of a precision profile. One can add multiple
+precision profiles to one plot as done in the CLSI EP05-A3 guideline from which this example is borrowed.
+Below, we start with plotting the fitted precision profile for *reproducibility*, where concentrations on the
+X-axis are plotted on log-scale. Here, we also leave some space in the right margin to add a legend later on.
+  
+```{r CLSI_EP05_Example_1, echo=TRUE}
+plot(	tot.all, model.no=8, mar=c(5.1, 5, 4.1, 8), 
+		type="cv", ci.type="none", Model=FALSE,
+		Line=list(col="blue", lwd=3), 
+		Points=list(pch=15, col="blue", cex=1.5),  
+		xlim=c(10, 450), ylim=c(0,10),
+		Xlabel=list(text="CA19-9, kU/L (LogScale) - 3 Patient Pools, 3 QC Materials",
+				cex=1.25), Title=NULL,
+		Ylabel=list(text="% CV", cex=1.25, line=3),
+		Grid=NULL, Crit=NULL, log="x")
+
+# We now add the precision profile for intermediate precision
+# to the existing plot (add=TRUE).
+
+mod8.ip <- fit.vfp(mat.ip, 8)
+plot(mod8.ip, type="cv", add=TRUE, ci.type="none",
+	 Points=list(pch=16, col="deepskyblue", cex=1.5),
+	 Line=list(col="deepskyblue", lwd=3), log="x")
+
+# Now, add the precision profile of repeatability.
+
+mod8.rep <- fit.vfp(mat.rep, 8)
+plot(mod8.rep, type="cv", add=TRUE, ci.type="none",
+		Points=list(pch=17, col="darkorchid3", cex=1.5),
+		Line=list(col="darkorchid3", lwd=3), log="x")
+
+# Finally, add a legend in the right margin.
+
+legend.rm( x="center", pch=15:17, col=c("blue", "deepskyblue", "darkorchid3"),
+		cex=1, legend=c("Reproducibility", "Within-Lab", "Repeatability"),
+		box.lty=0)
+``` 
+		
+We now conclude with an example showing many of the different features of the standard
+*plot*-method for *VFP*-objects.
+
+```{r CLSI_EP05_Example_2, echo=TRUE}
+plot(mod8.rep, BG="darkgray", 
+		Points=list(pch=17, cex=1.5, col="blue"), Line=list(col="blue"),
+		Grid=list(x=seq(0, 450, 50), y=seq(0, 110, 10), col="white"),
+		Xlabel=list(cex=1.5, text="CA19-9 [U/mL]", col="blue"),
+		Ylabel=list(cex=1.5, text="Repeatability on Variance-Scale", col="blue"),
+		Crit=NULL)		
+```  
+  
+  
+                                                          
+# Functional Sensitivity and More
+
+Beyond beautification options available in the *plot*-method for *VFP*-objects there is more useful functionality 
+integrated. Actually, the functionality of functions *predict.VFP* and *predictMean* are integrated via argument
+*Prediction* in *plot.VFP()*.  
+In the introduction, we talked about some drawbacks of presenting precision data in tables. Usually, one is 
+interested in the (im)precision at a specific concentration, e.g. at a medical decision point. This
+can easily be inferred from a precision profile and visualized in one step using the *Prediction* argument. This
+can be used in multiple ways as shown below.
+
+If a number or a vector of numbers is assigned to argument *Prediction* this will be interpreted as having 
+specified *Prediction=list(y=x)*, where *x* is the number. This will internally trigger calling function 
+*predictMean* to derive that concentration at which the specified variability is reached. Note, that the scale
+of the Y-axis is here taken into account, i.e. if on CV-scale specifications mean percent CV which differs from
+SD- or variance-scales.  
+The main use-case for this is determining *functional sensitivity* of an assay, i.e. a concentrations at which e.g.
+a pre-specified CV is not exceeded for all concentrations larger than this value.
+
+```{r beautified_with_prediction_1, echo=TRUE}
+plot(mod8.rep, type="cv", ylim=c(0, 8), Prediction=5)
+```
+
+To add confidence intervals, one can set argument *Pred.CI=TRUE*.
+
+```{r beautified_with_prediction_2, echo=TRUE}
+plot(mod8.rep, type="cv", ylim=c(0, 8), xlim=c(0, 100), Prediction=5, Pred.CI=TRUE)
+``` 
+
+Calling function *predict.VFP* within the plotting function can be achieved as shown below.
+
+```{r beautified_with_prediction_3, echo=TRUE}
+plot(mod8.rep, type="cv", ylim=c(0, 8), xlim=c(0, 100), Prediction=list(x=50), Pred.CI=TRUE)
+``` 
+
+Once a precision profile for an IVD-assay is established one can infer variability at any concentration of interest
+from it. It nicely summarizes the precision performance of an assay in a simple plot providing much higher information
+density than e.g. a simple table. One can also use it to derive functional sensitivity, which is specific to an assay,
+being that concentration at which a pre-defined variability is undercut for all concentrations larger than this value.
+  
+  
+  
+# C5 and C95 for Qualitative Tests
+
+Another extremely useful property of precision profiles, predominantly required for qualitative tests, is to derive
+*C5* and *C95* concentrations. For qualitative tests, where an internal continuous response (ICR) is available from which
+the qualitative result is derived, e.g. negative or positive, non-reactive or. reactive, etc., precision profiles should be used 
+to establish *C5* and *C95* according to the CLSI EP12 guideline. These concentrations correspond to samples which, when measured
+many times, are expected to yield proportions of measurements found having the condition of interest. In case of *C5* this proportion
+is 5%, in case of *C95* 95% of the replicates are expected to have it. There is a function available in R-package *VFP* designed
+to provide this information based on a precision-profile stored as a VFP-object.
+  
+  
+Assume values on the X-axis to be measurements of the ICR, which is usually available for manufacturers of qualitative IVD-assays.  
+ 
+```{r deriveCx_examples_1, echo=TRUE}
+deriveCx(mod8.rep, cutoff=40, start=35, Cx=0.05)
+```
+
+The actual nice feature of this function is to visualize concentration *Cx* if requested via *plot=TRUE*.
+
+```{r deriveCx_examples_2, echo=TRUE}
+deriveCx(mod8.rep, cutoff=40, start=35, Cx=0.05, plot=TRUE)
+```
+  
+The same can be done for *C95*.
+  
+```{r deriveCx_examples_3, echo=TRUE}
+deriveCx(mod8.rep, cutoff=40, start=35, Cx=0.95, plot=TRUE)
+```
+  
+Now assume there are two cutoffs defining an equivocal zone in between, i.e. a re-test zone, 
+gray zone or borderline results. Using function *precisionPlot* helps to nicely summarize all
+information linked to *C5* and *C95*. 
+
+```{r deriveCx_examples_4, echo=TRUE}
+res <- precisionPlot(mod8.rep, cutoff=c(35, 40), prob=c(.05, .95), alpha2=.5) 
+```
+  
+Note, that this function invisibly returns computed results, which might be of interest.
+
+```{r deriveCx_examples_5, echo=TRUE}
+print(str(res))
+head(res[[1]])
+```
+

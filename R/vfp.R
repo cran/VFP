@@ -296,7 +296,7 @@ conditionHandler <- function(expr,  file=NULL)
 		result <- try(withCallingHandlers(expr, warning = WHandler, message=MHandler), silent=TRUE)
 	}
 	
-	if(class(result) == "try-error" || class(result[[1]]) == "try-error")
+	if(class(result[[1]]) == "try-error") # || class(result) == "try-error")
 	{		
 		Errors <- attr(result, "condition")$message
 		result <- NA
@@ -320,8 +320,8 @@ conditionHandler <- function(expr,  file=NULL)
 #'	 \item{constant variance}{ \eqn{sigma^2}}
 #'	 \item{constant CV}{\eqn{ sigma^2=beta_1*u^2 }}
 #'	 \item{mixed constant, proportional variance}{ \eqn{sigma^2=beta_1+beta*u^2}}
-#'	 \item{constrained power model, constant exponent}{ \eqn{sigma^2=(beta_1+beta_2*u)^C}}
-#'	 \item{alternative constrained power model}{ \eqn{sigma^2=beta_1+beta_2*u^C}}
+#'	 \item{constrained power model, constant exponent}{ \eqn{sigma^2=(beta_1+beta_2*u)^K}}
+#'	 \item{alternative constrained power model}{ \eqn{sigma^2=beta_1+beta_2*u^K}}
 #'	 \item{alternative unconstrained power model for VF's with a minimum}{ \eqn{sigma^2=beta_1+beta_2*u+beta_3*u^J}}
 #'	 \item{alternative unconstrained power model}{ \eqn{sigma^2=beta_1+beta_2*u^J}}
 #'	 \item{unconstrained power model (default model of Sadler)}{ \eqn{sigma^2=(beta_1 + beta_2 * u)^J}}
@@ -332,7 +332,7 @@ conditionHandler <- function(expr,  file=NULL)
 #' equivalent and these are constrained versions of model 7 where the exponent is also estimated. The latter also applies to model
 #' 4 which is a constrained version of model 8. Nevertheless, since computation time is not critical here for typical
 #' precision-profiles (of in-vitro diagnostics precision experiments) we chose to offer batch-processing as well.
-#' During computation, all models are internally reparametrized so as to guarantee that the variance function is positive in the
+#' During computation, all models are internally reparameterized so as to guarantee that the variance function is positive in the
 #' range 'u' from 0 to 'u_max'. In models 7 and 8, 'J' is restricted to 0.1<J<10 to avoid the appearance of sharp hooks. 
 #' Occasionally, these restrictions may lead to a failure of convergence. This is then a sign that the model parameters
 #' are on the boundary and that the model fits the data very badly. This should not be taken as reason for concern. 
@@ -491,8 +491,8 @@ conditionHandler <- function(expr,  file=NULL)
 
 
 fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T, 
-					col.mean="Mean", col.var="VC", col.df="DF", 
-					col.sd=NULL, col.cv=NULL, minVC=NA, ...) #.Machine$double.eps, ...)
+		col.mean="Mean", col.var="VC", col.df="DF", 
+		col.sd=NULL, col.cv=NULL, minVC=NA, ...) #.Machine$double.eps, ...)
 {
 	
 	Call <- match.call()
@@ -597,15 +597,15 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 	RSS 		<- Deviance <- AIC <- numeric(10)
 	
 	Formulas	<- c( 	"sigma^{2}==beta[1]",									# model 1
-						"sigma^{2}==beta[1]*u^{2}",								# model 2
-						"sigma^{2}==beta[1]+beta[2]*u^2",						# model 3
-						paste("sigma^{2}==(beta[1]+beta[2]*u)^{",K,"}"),		# model 4, replace K by acutal value of K
-						paste("sigma^{2}==beta[1]+beta[2]*u^{",K,"}"),			# model 5,                - " -
-						"sigma^{2}==beta[1]+beta[2]*u+beta[3]*u^{J}",			# model 6
-						"sigma^{2}==beta[1]+beta[2]*u^{J}",						# model 7
-						"sigma^{2}==(beta[1]+beta[2]*u)^{J}",					# model 8
-						"sigma^{2}==beta[1]*u^{J}",								# model 9
-						"cv==beta[1]*u^{J}")									# model 10 (true CLSI EP17 model)
+			"sigma^{2}==beta[1]*u^{2}",								# model 2
+			"sigma^{2}==beta[1]+beta[2]*u^2",						# model 3
+			paste("sigma^{2}==(beta[1]+beta[2]*u)^{",K,"}"),		# model 4, replace K by acutal value of K
+			paste("sigma^{2}==beta[1]+beta[2]*u^{",K,"}"),			# model 5,                - " -
+			"sigma^{2}==beta[1]+beta[2]*u+beta[3]*u^{J}",			# model 6
+			"sigma^{2}==beta[1]+beta[2]*u^{J}",						# model 7
+			"sigma^{2}==(beta[1]+beta[2]*u)^{J}",					# model 8
+			"sigma^{2}==beta[1]*u^{J}",								# model 9
+			"cv==beta[1]*u^{J}")									# model 10 (true CLSI EP17 model)
 	
 	names(RSS) 	<- names(Deviance) <- names(AIC) <- paste0("Model_", 1:10)
 	
@@ -640,7 +640,7 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			coeffs 	<- bt.coef(tmp.res$result, model=1)#
 			my.form1simple 	<-  VC ~ 1
 			tmp.res <- conditionHandler(gnm(formula = my.form1simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
-											start=coeffs, trace=TRUE,iterMax=1), file="./stdout.log")
+							start=coeffs, trace=TRUE,iterMax=1), file="./stdout.log")
 			res.gnm1 	<- tmp.res$result
 			RSS[1] 		<- sum((res.gnm1$y-res.gnm1$fitted.values)^2)
 			AIC[1]		<- res.gnm1$aic
@@ -670,15 +670,15 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 		my.form2 	<- VC ~ offset(mu)  # constant CV
 		startvals   <- log(weighted.mean(Data[,"VC"]/Data[,"Mean"]^2,pweights)) #exact solution
 		tmp.res 	<- conditionHandler(gnm(formula = my.form2, family = Gamma(link = "log"), data = Data, weights = pweights,
-											start=startvals, trace=TRUE), file="./stdout.log")
+						start=startvals, trace=TRUE), file="./stdout.log")
 		if(tmp.res$status != 2)
 		{
 			coeffs 	<- bt.coef(tmp.res$result, model=2)#
-		    mu		<- Data[,"Mean"]^2
+			mu		<- Data[,"Mean"]^2
 			my.form2simple 	<-  VC ~ powfun2simple(Mean)-1
-
+			
 			tmp.res <- conditionHandler(gnm(formula = my.form2simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
-											start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
+							start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
 			res.gnm2 	<- tmp.res$result
 			RSS[2] 		<- sum((res.gnm2$y-res.gnm2$fitted.values)^2)
 			AIC[2]		<- res.gnm2$aic
@@ -719,16 +719,16 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 		{
 			startvals <- t.coef(startvals,Maxi=mumax,model=3)
 		}
-        my.form3	<- VC~ -1 + powfun3(mu) #quadratic model
+		my.form3	<- VC~ -1 + powfun3(mu) #quadratic model
 		tmp.res 	<- conditionHandler(gnm(formula = my.form3, family = Gamma(link = "identity"), data = Data, weights = pweights,
-											start=startvals, trace=TRUE), file="./stdout.log")
-
+						start=startvals, trace=TRUE), file="./stdout.log")
+		
 		if(tmp.res$status != 2)
 		{
 			coeffs 			<- bt.coef(tmp.res$result, model=3)
 			my.form3simple 	<- VC ~ powfun3simple(Mean)-1
 			tmp.res 		<- conditionHandler(gnm(formula = my.form3simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
-													start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
+							start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
 			if(tmp.res$status != 2)
 			{				
 				res.gnm3 		<- tmp.res$result
@@ -778,15 +778,15 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 		}
 		
 		tmp.res <- conditionHandler(gnm(formula = my.form4, family = Gamma(link = "identity"), data = Data, weights = pweights,
-										start=startvals, trace=TRUE), file="./stdout.log")
+						start=startvals, trace=TRUE), file="./stdout.log")
 		
 		if(tmp.res$status != 2)
 		{
 			coeffs 	<- bt.coef(tmp.res$result,K=K, model=4)#
 			my.form4simple 	<- VC~-1+powfun4simple(Mean, K) #fixed power model 
 			tmp.res <- conditionHandler(gnm(formula = my.form4simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
-											start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
-		
+							start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
+			
 			if(tmp.res$status != 2)
 			{		
 				res.gnm4	<- tmp.res$result
@@ -839,14 +839,14 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			
 			my.form5 	<- VC~-1+powfun5(mu)		#const model, requires a fixed power on input
 			tmp.res 	<- conditionHandler(gnm(formula = my.form5, family = Gamma(link = "identity"), data = Data, weights = pweights,
-												start=startvals, trace=TRUE), file="./stdout.log")	
+							start=startvals, trace=TRUE), file="./stdout.log")	
 			if(tmp.res$status != 2)
 			{
 				coeffs 	<- bt.coef(tmp.res$result,K=K, model=5)
 				my.form5simple <- VC~powfun5simple(Mean,K)-1
 				tmp.res <- conditionHandler(gnm(formula = my.form5simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
-												start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
-
+								start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
+				
 				if(tmp.res$status != 2)
 				{
 					res.gnm5 <- tmp.res$result	
@@ -903,8 +903,8 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 				st 			<- lm(VC ~ mu+muJ, data=Data,weights=startweights)
 				startvals	<-t.coef(c(st$coefficients,J),model=6)
 				tmp.res 	<- conditionHandler(gnm(formula = my.form6, family = Gamma(link = "identity"), data = Data, weights = pweights,
-													start=startvals, trace=TRUE), file="./stdout.log")							
-
+								start=startvals, trace=TRUE), file="./stdout.log")							
+				
 				if(tmp.res$status != 2)
 				{
 					if(!is.null(tmp.res$result) && tmp.res$result$deviance<tempdev)
@@ -927,7 +927,7 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 		{
 			startvals <- t.coef(startvals,model=6)
 			tmp.res <- conditionHandler(gnm(formula = my.form6, family = Gamma(link = "identity"), data = Data, weights = pweights,
-											start=startvals, trace=TRUE), file="./stdout.log")		
+							start=startvals, trace=TRUE), file="./stdout.log")		
 			if(tmp.res$status != 2)
 			{
 				res.gnm6 <- tmp.res$result
@@ -950,7 +950,7 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			coeffs 			<- bt.coef(res.gnm6, model=6)#
 			my.form6simple 	<- VC~-1+powfun6simple(Mean)
 			tmp.res 		<- conditionHandler(gnm(formula = my.form6simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
-												start=coeffs, trace=TRUE, iterMax=0), file="./stdout.log")
+							start=coeffs, trace=TRUE, iterMax=0), file="./stdout.log")
 			if(tmp.res$status != 2)
 			{
 				res.gnm6 		<- tmp.res$result							 
@@ -988,7 +988,7 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 				startvals   <-t.coef(c(st$coefficients,J),Maxi=max(muJ),model=7)
 				my.form7 	<- VC ~ -1+powfun7(mu) 
 				tmp.res  	<- conditionHandler(gnm(formula=my.form7, family=Gamma(link = "identity"), data=Data,
-												weights=pweights, start=startvals, trace=TRUE), file="./stdout.log")
+								weights=pweights, start=startvals, trace=TRUE), file="./stdout.log")
 				if(tmp.res$status != 2)
 				{
 					if(!is.null(tmp.res$result) && tmp.res$result$deviance<tempdev)
@@ -1036,7 +1036,7 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			coeffs 	<- bt.coef(res.gnm7, model=7)#
 			my.form7simple <- VC~-1+powfun7simple(Mean)
 			tmp.res <- conditionHandler(gnm(formula = my.form7simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
-											start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
+							start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
 			
 			if(!is.null(tmp.res))
 			{
@@ -1078,25 +1078,25 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 				st 				<- lm(VCrootJ ~ mu, data=Data,weights=startweights)
 				startvals		<- t.coef(c(st$coefficients,signJ*J),Maxi=C,signJ=signJ,model=8)
 				tmp.res 		<- conditionHandler(gnm(formula = my.form8, family = Gamma(link = "identity"), 
-														data = Data, weights = pweights ,start=startvals, 
+								data = Data, weights = pweights ,start=startvals, 
 								trace=TRUE), file="./stdout.log")
 				if(tmp.res$status != 2)
 				{
 					if(!is.null(tmp.res$result))
-                    {
-                        if(tmp.res$result$deviance<tempdev)
-                        {
-                            res.gnm8 <- tmp.res$result
-                            sgnJ <- signJ
-                            tempdev  <- res.gnm8$deviance
-                            if(tmp.res$status == 1)
-                                warnings <- c(warnings, paste0("Model 8 (Warnings): ", tmp.res$warnings))
-                            if(!is.null(tmp.res$messages))
-                                messages <- c(messages, paste0("Model 8 (Messages): ", tmp.res$messages))
-                            
-                            tmp.msg <- " ... finished."
-                        }
-                    }
+					{
+						if(tmp.res$result$deviance<tempdev)
+						{
+							res.gnm8 <- tmp.res$result
+							sgnJ <- signJ
+							tempdev  <- res.gnm8$deviance
+							if(tmp.res$status == 1)
+								warnings <- c(warnings, paste0("Model 8 (Warnings): ", tmp.res$warnings))
+							if(!is.null(tmp.res$messages))
+								messages <- c(messages, paste0("Model 8 (Messages): ", tmp.res$messages))
+							
+							tmp.msg <- " ... finished."
+						}
+					}
 				}
 				else
 					errors <- c(errors, paste0("Model 8 (Errors): ", tmp.res$errors))
@@ -1111,25 +1111,25 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 				st 				<- lm(VCrootJ ~ mu, data=Data,weights=startweights)
 				startvals		<- t.coef(c(st$coefficients,signJ*J),Maxi=C,signJ=signJ,model=8)
 				tmp.res 		<- conditionHandler(gnm(formula = my.form8, family = Gamma(link = "identity"), 
-														data = Data, weights = pweights ,start=startvals, 
-														trace=TRUE), file="./stdout.log")
+								data = Data, weights = pweights ,start=startvals, 
+								trace=TRUE), file="./stdout.log")
 				if(tmp.res$status != 2)
 				{
-                    if(!is.null(tmp.res$result))
-                    {
-                        if(tmp.res$result$deviance<tempdev)
-                        {
-                            res.gnm8 <- tmp.res$result
-                            sgnJ <- signJ
-                            tempdev  <- res.gnm8$deviance
-                            if(tmp.res$status == 1)
-                                warnings <- c(warnings, paste0("Model 8 (Warnings): ", tmp.res$warnings))
-                            if(!is.null(tmp.res$messages))
-                                messages <- c(messages, paste0("Model 8 (Messages): ", tmp.res$messages))
-                            
-                            tmp.msg <- " ... finished."
-                        }
-                    }
+					if(!is.null(tmp.res$result))
+					{
+						if(tmp.res$result$deviance<tempdev)
+						{
+							res.gnm8 <- tmp.res$result
+							sgnJ <- signJ
+							tempdev  <- res.gnm8$deviance
+							if(tmp.res$status == 1)
+								warnings <- c(warnings, paste0("Model 8 (Warnings): ", tmp.res$warnings))
+							if(!is.null(tmp.res$messages))
+								messages <- c(messages, paste0("Model 8 (Messages): ", tmp.res$messages))
+							
+							tmp.msg <- " ... finished."
+						}
+					}
 				}
 				else
 					errors <- c(errors, paste0("Model 8 (Errors): ", tmp.res$errors))
@@ -1148,15 +1148,15 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			my.form	<- VC~-1+powfun8(Mean, C,signJ) 
 			startvals <-t.coef(startvals,Maxi=C,signJ=signJ,model=8)
 			tmp.res <- conditionHandler(gnm(formula = my.form8, family = Gamma(link = "identity"), 
-											data = Data, weights = pweights ,start=startvals, 
-											trace=TRUE), file="./stdout.log")
+							data = Data, weights = pweights ,start=startvals, 
+							trace=TRUE), file="./stdout.log")
 			
 			if(tmp.res$status != 2)
 			{
 				if(!is.null(tmp.res$result))
 				{
 					res.gnm8 <- tmp.res$result
-                    sgnJ <- signJ
+					sgnJ <- signJ
 					if(tmp.res$status == 1)
 						warnings <- c(warnings, paste0("Model 8 (Warnings): ", tmp.res$warnings))
 					if(!is.null(tmp.res$messages))
@@ -1176,11 +1176,11 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			coeffs 	<- bt.coef(res.gnm8,signJ=sgnJ, model=8)
 			my.form8simple <- VC~-1+powfun8simple(Mean)
 			tmp.res <- conditionHandler(gnm(formula = my.form8simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
-											start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
+							start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
 			
 			if(!is.null(tmp.res))
 			{
-
+				
 				res.gnm8    <- tmp.res$result
 				RSS[8] 		<- sum((res.gnm8$y-res.gnm8$fitted.values)^2)
 				AIC[8]		<- res.gnm8$aic
@@ -1216,7 +1216,7 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 		}
 		
 		tmp.res <- conditionHandler(gnm(formula = my.form9, family = Gamma(link = "log"), data = Data, weights = pweights,
-										start=startvals, trace=TRUE), file="./stdout.log")
+						start=startvals, trace=TRUE), file="./stdout.log")
 		
 		if(tmp.res$status != 2)
 		{
@@ -1240,8 +1240,8 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			
 			my.form9simple 	<- VC~-1+powfun9simple(Mean)
 			tmp.res 		<- conditionHandler(gnm(formula = my.form9simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
-													start=coeffs, trace=TRUE, iterMax=0), file="./stdout.log")
-									
+							start=coeffs, trace=TRUE, iterMax=0), file="./stdout.log")
+			
 			if(!is.null(tmp.res ))
 			{		
 				res.gnm9    	<- tmp.res$result
@@ -1341,7 +1341,9 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 #'
 #' @param obj		(list) of VCA-objects
 #' @param vc		(integer, character) either an integer specifying a variance component
-#' 					or the name of a variance component
+#' 					or the name of a variance component; can also be a vector of integers
+#' 					specifying a continuous sequence of variance components always including
+#' 					'error' (repeatability)
 #' 
 #' @author Andre Schuetzenmeister \email{andre.schuetzenmeister@@roche.com}
 #' 
@@ -1350,8 +1352,11 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 #' library(VCA)
 #' data(VCAdata1)
 #' lst <- anovaVCA(y~(device+lot)/day/run, VCAdata1, by="sample")
-#' mat <- getMat.VCA(lst)
-#' mat
+#' getMat.VCA(lst)  # automatically selects 'total'
+#' # pooled version of intermediate precision (error+run+day)
+#' getMat.VCA(lst, 4:6)
+#' # only repeatability ('error')
+#' getMat.VCA(lst, "error")
 #' }
 
 getMat.VCA <- function(obj, vc=1)
@@ -1362,11 +1367,30 @@ getMat.VCA <- function(obj, vc=1)
 	tab <- obj[[1]]$aov.tab
 	if(is.numeric(vc))
 	{
-		stopifnot(vc >= 1 && vc <= nrow(tab))
+		stopifnot(all(vc %in% 1:nrow(tab)))
+		nm <- vc
 		vc <- rownames(tab)[vc]
 	}
 	else
-		stopifnot(vc %in% rownames(tab))
+	{
+		stopifnot(all(vc %in% rownames(tab)))
+		nm <- (1:nrow(tab))[which(rownames(tab) %in% vc)]	
+	}
+	
+	if(length(nm) > 1)
+	{
+		if(max(nm) != nrow(tab) || !(all(diff(nm) == 1)))
+			stop("When specifying a sequence of variance components, it must include 'error' and be continuous!")
+	}
+	if(length(vc) > 1)		
+	{
+		tmp <- lapply(obj, stepwiseVCA)			# perform all combinations of VCA
+		idx <- suppressWarnings(which(unlist(lapply(tmp[[1]], function(x) all(rownames(x$aov.tab) == c("total", vc))))))
+		for(i in 1:length(tmp))
+			tmp[[i]] <- tmp[[i]][[idx]]
+		obj <- tmp
+		vc  <- "total"
+	}
 	
 	mat <- t(sapply(obj, function(x) c(Mean=x$Mean, x$aov.tab[vc, c("DF", "VC")])))
 	mat <- as.data.frame(mat[order(mat[,"Mean"]),])
@@ -1546,23 +1570,23 @@ getMat.VCA <- function(obj, vc=1)
 #' }
 
 plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
-						alpha=.05, ci.col="gray90", ci.type=c("band", "lines", "none"), 
-						dispersion=NULL, browse=FALSE, BG="white", Title=list(),
-						Xlabel=list(), Ylabel=list(), Line=list(), 
-						Points=list(), Grid=list(), Crit=list(),
-						ylim=NULL, Prediction=NULL, Pred.CI=NULL, Model=TRUE,
-						CI.method=c("chisq", "t", "normal"), use.log=FALSE,
-						Npred=200, ...)
+		alpha=.05, ci.col="gray90", ci.type=c("band", "lines", "none"), 
+		dispersion=NULL, browse=FALSE, BG="white", Title=list(),
+		Xlabel=list(), Ylabel=list(), Line=list(), 
+		Points=list(), Grid=list(), Crit=list(),
+		ylim=NULL, Prediction=NULL, Pred.CI=NULL, Model=TRUE,
+		CI.method=c("chisq", "t", "normal"), use.log=FALSE,
+		Npred=200, ...)
 {
 	call 	<- match.call()
 	obj 	<- x
 	type 	<- match.arg(type[1], choices=c("vc", "cv", "sd"))
 	ci.type <- match.arg(ci.type[1], choices=c("band", "lines", "none"))
 	stopifnot(alpha > 0 && alpha < 1)
-
+	
 	#### CI-method one of "t", "normal", "chisq" (default)
 	CI.method	<- match.arg(CI.method[1], choices=c("t", "normal", "chisq"))
-
+	
 	if(is.null(call$xlim))
 	{
 		xlim <- range(obj$Data[,"Mean"])
@@ -1575,7 +1599,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 		if(xlim[1] <= 0)
 			xlim[1] <- min(obj$Models[[1]]$data[,"Mean"], na.rm=TRUE)/10
 	}
-
+	
 	old.par <- par(mgp=c(3, .75, 0))
 	on.exit(suppressWarnings(par(ask=FALSE)))
 	
@@ -1620,7 +1644,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 		
 		return()
 	}	
-
+	
 	stopifnot(is.null(dispersion) || (is.numeric(dispersion) && dispersion > 0))
 	
 	if(is.null(dispersion))
@@ -1629,24 +1653,24 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 	}
 	
 	Main 	<- switch(	type, 
-						"vc"="Variance", 
-						"cv"="CV",
-						"sd"="SD")
+			"vc"="Variance", 
+			"cv"="CV",
+			"sd"="SD")
 	Main 	<- paste0("Precision Profile on ", Main, "-Scale")
 	Data 	<- obj$Models[[num]]$data
 	if(is.null(Data))
 		Data <- obj$Data											# for EP17 model
 	xval 	<- seq(xlim[1], xlim[2], length.out=Npred)				# function is drawn by using 100 points
-
+	
 	if(use.log)
 		xval <- log(xval)
 	
 	# call predict.VFP here
 	preds	<- predict(	obj, model.no=model.no, newdata=xval, dispersion=dispersion, type=type, 
-						CI.method=CI.method, use.log=use.log, alpha=alpha)
-
+			CI.method=CI.method, use.log=use.log, alpha=alpha)
+	
 	Np <- nrow(preds)				
-				
+	
 	# sanity check for UCL values
 	prdc <- preds$UCL[1:(Np-1)]
 	succ <- preds$UCL[2:Np]
@@ -1657,7 +1681,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 		preds <- preds[-ind,,drop=F]
 		xval  <- preds$Mean
 	}
-				
+	
 	if(all(is.na(preds$SE)))
 		message("Confidence-region for current model could not be estimated!")
 	
@@ -1686,23 +1710,23 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 	
 	y 	<- preds$Fitted	#fit				# refers to variance-scale
 	se	<- preds$SE		#se	<- preds$se.fit
-
+	
 	#Points$y <- Data[in.xlim, "VC"]
 	Points$y <- Data[, "VC"]
 	if(is.null(Ylabel$text))
 	{
 		Ylabel$text <- switch(type,
-								"vc"=ifelse(use.log, "log( Variance )", "Variance"),
-								"cv"=ifelse(use.log, "log( %CV )","Coefficient of Variation [%]"),
-								"sd"=ifelse(use.log, "log( SD )","Standard Deviation"))
+				"vc"=ifelse(use.log, "log( Variance )", "Variance"),
+				"cv"=ifelse(use.log, "log( %CV )","Coefficient of Variation [%]"),
+				"sd"=ifelse(use.log, "log( SD )","Standard Deviation"))
 	}
 	
 	if(is.null(Xlabel$text))
 		Xlabel$text <- 	ifelse(use.log, "log( Mean )", "Mean")
-
+	
 	CIupper 	<- preds$UCL
 	CIlower 	<- preds$LCL
-
+	
 	if(type %in% c("sd", "cv"))
 	{
 		Points$y	<- sqrt(Data[,"VC"])
@@ -1715,7 +1739,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 		Points$y 	<- log(Points$y)
 		Points$x 	<- log(Points$x)
 	}
-
+	
 	if(is.null(ylim))
 	{
 		if(use.log)
@@ -1734,7 +1758,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 		par(mar=c(5, max(nc-1, 6), 4,1))
 	else
 		par(mar=eval(call$mar))
-
+	
 	if(!add)					# generate new plot
 	{
 		if(is.null(call$axes))
@@ -1804,10 +1828,10 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 				Prediction <- list(y=Prediction)
 			
 			Type <- switch(	type, 
-							vc = "VC",
-							sd = "SD",
-							cv = "CV"
-					)
+					vc = "VC",
+					sd = "SD",
+					cv = "CV"
+			)
 			
 			if(is.numeric(Prediction$y))
 			{
@@ -1825,7 +1849,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 				else
 					predMean <- rbind(predMean, predVar)
 			}
-		
+			
 			# confidence interval for predictions
 			if(!is.null(Pred.CI))
 			{
@@ -1835,7 +1859,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 			}
 			
 			Prediction.def 	<- list(lty=2, lwd=2, col="blue", x.line=1.5, y.line=2, digits=2, 
-									cex=1, font=1)
+					cex=1, font=1)
 			Prediction.def[names(Prediction)] <- Prediction
 			Prediction 		<- Prediction.def
 			pred.col		<- ifelse(is.null(Prediction$text.col), Prediction$col, Prediction$text.col)
@@ -1847,7 +1871,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 			
 			USR 	<- par("usr")
 			Largs	<- list(lty=Prediction$lty, lwd=Prediction$lwd, col=Prediction$col)
-
+			
 			for(i in 1:nrow(predMean))
 			{
 				if(!is.null(Pred.CI))
@@ -1857,14 +1881,14 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 					predArgs$ybottom 	<- ifelse(predMean[i,"Type"]==2, predMean[i,"LCL"], USR[3])
 					predArgs$xright 	<- ifelse(predMean[i,"Type"]==2, predMean[i, ifelse(type=="log", "Log.Mean", "Mean")], predMean[i,"UCL"])
 					predArgs$ytop 		<- ifelse(predMean[i,"Type"]==2, predMean[i,"UCL"], predMean[i, Type])
-
+					
 					do.call("rect", predArgs)
 				}
 				tmpArgs 	<- Largs
 				tmpArgs$x	<- c(USR[1], rep(predMean[i, 1], 2))
 				tmpArgs$y	<- c(rep(predMean[i, 2], 2), USR[3])
 				do.call("lines", tmpArgs)
-
+				
 				mtext(	side=1, text=round(unlist(predMean[i,1]), digits=digits), at=predMean[i,1], 
 						col=pred.col, line=x.line, cex=pred.cex, font=pred.font)
 				
@@ -1873,7 +1897,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 			}
 		}
 	}
-
+	
 	# will be done if add is TRUE or FALSE
 	
 	Line.def <- list(col="black", lwd=1, lty=1)
@@ -1901,9 +1925,9 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 		if(!is.null(Crit))
 		{
 			Crit.default <- list(	x=ifelse(type=="cv", "topright", "topleft"), 
-									box.lty=0, bg=par("bg"),
-									legend=parse(text=c(paste("AIC ==", tmpAIC),
-														paste("RSS[VC] ==", paste(tmpRSS, " (unweighted)")))))
+					box.lty=0, bg=par("bg"),
+					legend=parse(text=c(paste("AIC ==", tmpAIC),
+									paste("RSS[VC] ==", paste(tmpRSS, " (unweighted)")))))
 			Crit.default[names(Crit)] <- Crit
 			Crit <- Crit.default
 			do.call("legend", Crit)
@@ -1913,7 +1937,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 	}
 	
 	res <- NULL
-
+	
 	if(!is.null(predMean))
 	{
 		tLCL 	<- paste0("LCL.", Type)
@@ -1983,7 +2007,7 @@ Signif <- function(x, digits=4, force=TRUE, ...)
 	if(length(x) > 1)
 		return(sapply(x, Signif, digits=digits, manyX=TRUE))
 	
-	if(!manyX && class(x) == "coef.gnm")		# assign name to single gnm-coefficient
+	if(!manyX && "coef.gnm" %in% class(x))		# assign name to single gnm-coefficient
 	{
 		x <- as.numeric(x)
 		names(x) <- "beta1"
@@ -2053,7 +2077,7 @@ summary.VFP <- function(object, model.no=NULL, digits=4, type=c("simple", "compl
 	
 	if(model.no == 10)
 		type <- "simple"
-
+	
 	form 	<- object$Formulas[num]
 	fun	<- function(x)
 	{
@@ -2087,10 +2111,10 @@ summary.VFP <- function(object, model.no=NULL, digits=4, type=c("simple", "compl
 	if(type == "complex")
 	{
 		Smry <- summary(object$Models[[num]])
-
+		
 		printCoefmat(	Smry$coefficients, digits = digits, 
-						signif.stars=getOption("show.signif.stars"), 
-						signif.legend=TRUE, na.print = "NA", ...)
+				signif.stars=getOption("show.signif.stars"), 
+				signif.legend=TRUE, na.print = "NA", ...)
 		
 		cat("\nDeviance Residuals:\n")
 		print(summary(Smry$deviance.resid))
@@ -2099,10 +2123,10 @@ summary.VFP <- function(object, model.no=NULL, digits=4, type=c("simple", "compl
 		print(Signif(coef(object, model.no), digits), quote=FALSE)
 	
 	cat("\nAIC =", 		 Signif(object$AIC[num], digits), 
-		" RSS =", 		 Signif(object$RSS[num], digits), 
-		" Deviance =",   Signif(object$Deviance[num], digits), 
-		" GoF P-value=", Signif(object$GoF.pval[num], digits), "\n\n")
-
+			" RSS =", 		 Signif(object$RSS[num], digits), 
+			" Deviance =",   Signif(object$Deviance[num], digits), 
+			" GoF P-value=", Signif(object$GoF.pval[num], digits), "\n\n")
+	
 	if(!is.null(object$note) && Nmodel > 1)
 	{
 		cat("\t[+++ Note +++]\n\n")
@@ -2192,7 +2216,7 @@ print.VFP <- function(x, model.no=NULL, digits=4, ...)
 
 coef.VFP <- function(object, model.no=NULL, ...)
 {
-
+	
 	if(is.null(model.no))				# automatically determine best fitting model
 	{
 		AIC <- object$AIC
@@ -2312,7 +2336,7 @@ bt.coef <- function(object, K=NULL, signJ=NULL, model=NULL, ...)
 		coeffs <- c(exp(coeffs0[1]), coeffs0[2])
 		names(coeffs) <- c("beta1", "J")
 	}
-
+	
 	coeffs
 }
 
@@ -2406,7 +2430,277 @@ t.coef <- function(coeffs0, K=NULL, Maxi=NULL, model=NULL, signJ=NULL, eps=sqrt(
 	coeffs
 }
 
+#' Precision Performance Plot of Qualitative Tests.
+#' 
+#' This function visualizes what is described in the CLSI EP12 guideline
+#' for qualitative test with internal continuous response (ICR). The hit rate,
+#' i.e. the number of measurements deemed to have a certain condition. 
+#' The C5 and C95 concentrations will be derived per default by this function
+#' but it can be set to any set of hit rates.
+#' The histograms representing normal distribution of imprecisions at specific
+#' concentrations will be scaled to nicely fit into the plot, i.e. the area under
+#' the plot will not be equal to 1.
+#' 
+#' @param vfp			(VFP) object modeling imprecision over the measuring range
+#' @param model.no		(integer) specifying the VFP-model to used
+#' @param cutoff		(numeric) specifying one or two cutoff(s), the latter will 
+#' 						implicitly define an equivical zone with implications on how
+#' 						'prob' will be interpreted (see 'prob' for details)
+#' @param prob			(numeric) values 0 < x < 1 specifying coverage probability of
+#' 						an respecitive normal distribution at cutoff, in case of two 
+#' 						cutoffs all elements of 'prob' < 0.5 will be evaluated in 
+#' 						regard to cutoff 1, and all 'prob' > 0.5 in regard to cutoff 2
+#' @param col			(character) strings specifying colors of the different distributions,
+#' 						which will be plotted semi-transparent using 'alpha1' for specifying
+#' 						the level of transparency (1=opaque, 0=fully transparent)
+#' @param Cutoff		(list) specifying all parameters of the \code{\link{abline}} function.
+#' 						Vertical lines representing one or two cutoffs can be specified, the
+#' 						color will be re-used for a label in the upper margin. Set to NULL
+#' 						to omit.
+#' @param Title			(list) specifying all parameters applicable in function
+#' 						\code{\link{mtext}} for specifying a main title of the plot
+#' @param Xlabel		(list) specifying all parameters applicable in function
+#' 						\code{\link{mtext}} for specifying the X-axis label of the plot
+#' @param Ylabel		(list) specifying all parameters applicable in function
+#' 						\code{\link{mtext}} for specifying the Y-axis label of the plot
+#' @param HRLine		(list) specifying all parameters applicable in \code{\link{lines}}
+#' 						of the line representing the hit rate developing from 0\% to 100\% 
+#' @param Legend		(logical) TRUE = a legend is added to the plot
+#' @param nclass 		(integer) number of classes in the histograms representing normal
+#' 						distributions of imprecision at Cx-concentrations, number<10 will lead
+#' 						to automatically determining appropriate numbers per histogram (default)
+#' @param BG			(character) string specifying a background color
+#' @param digits		(integer) number of significant digits used to indicated concentrations Cx
+#' @param alpha			(numeric) value 0<=x<=1 specifying the level of transparency of histograms
+#' @param alpha2		(numeric) similar to 'alpha' referring to the coverage probability, i.e. 
+#' 						setting it to a value < 0 will highlight coverage probabilities in histograms
+#' @param xlim			(numeric) plotting limits in X-direction
+#' @param col.grid		(character) string specifying a color name to be used for the grid providing
+#' 						orientation in X- and Y-direction
+#' @param Nrand			(integer) specifying the number of data points simulated to represent a normal
+#' 						distribution
+#' 
+#' @examples 
+#' \dontrun{
+#' # perform variance component analysis
+#' library(VCA)
+#' data(VCAdata1)
+#' # perform VCA-anaylsis
+#' lst <- anovaVCA(y~(device+lot)/day/run, VCAdata1, by="sample")
+#' # transform list of VCA-objects into required matrix
+#' mat <- getMat.VCA(lst)		# automatically selects "total"
+#' mat
+#' # fit all models batch-wise, the best fitting will be used automatically
+#' res <- fit.vfp(model.no=1:10, Data=mat)
+#' # plot hit and visualize imprecision usign default settings
+#' precisionPlot(res, cutoff=20)
+#' # without normal distribution at cutoff do
+#' precisionPlot(res, cutoff=20, prob=c(.05, .95), col=c("blue", "red"))
+#' # highlight the proportion > cutoff (hit rate) more 
+#' precisionPlot(res, cutoff=20, prob=c(.05, .95), col=c("blue", "red"), alpha2=.5)
+#' # plot with legend
+#' precisionPlot(res, cutoff=20, prob=c(.05, .95), col=c("blue", "red"), alpha2=.5, Legend=TRUE)
+#' # use different probabilities and colors
+#' precisionPlot(res, cutoff=20, prob=c(.05, .95), col="black", alpha2=.3)
+#' 
+#' # now using two cutoffs, i.e. with equivocal zone
+#' precisionPlot(	res, cutoff=c(17, 19), prob=c(.05, .95), col=c("mediumblue", "red3"), 
+#' 					alpha2=.5, HRLine=list(col=c("mediumblue", "red3")))
+#' }
+#' 
+#' @author Andre Schuetzenmeister \email{andre.schuetzenmeister@@roche.com}
 
+precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col=c("blue", "black", "red"), 
+		Cutoff=list(), Title=list(), Xlabel=list(), Ylabel=list(), HRLine=list(),
+		Legend=FALSE, nclass=-1,  BG="gray90", digits=3, alpha=.15, alpha2=0, 
+		xlim=NULL, col.grid="white", Nrand=1e6)
+{
+	stopifnot(class(vfp) == "VFP")
+	stopifnot(is.numeric(cutoff))
+	Nco <- length(cutoff)
+	if(!Nco %in% 1:2)
+		stop("One or two numeric cutoff(s) must be specified!")
+	col <- rev(col)					# reverse order to match expectation
+	if(length(prob) > length(col))											
+		col <- rep(col, ceiling(length(prob)/length(col)))
+	
+	p 		<- c(.005, seq(.01, .12, .01), seq(.15, .85, .05), seq(.88, .99, .01), .995)
+	p		<- unique(sort(c(p, prob)))
+	
+	if(Nco == 1)
+		res1	<- deriveCx(vfp, model.no=model.no, cutoff=cutoff, Cx=p)
+	else
+	{
+		res1	<- deriveCx(vfp, model.no=model.no, cutoff=cutoff[1], Cx=p)
+		res2	<- deriveCx(vfp, model.no=model.no, cutoff=cutoff[2], Cx=p)
+	}
+	prob	<- sort(prob, decreasing=FALSE)
+	indMin	<- which(p == prob[1])
+	indMax	<- which(p == prob[length(prob)])
+	prob	<- sort(prob, decreasing=TRUE)
+	
+	if(is.null(xlim))
+	{
+		xlim	<- res1[indMin, "Mean"]-4*res1[indMin, "SD"]
+		xlim	<- c(xlim, 	if(Nco == 1)
+							res1[indMax, "Mean"]+4*res1[indMax, "SD"]
+						else
+							res2[indMax, "Mean"]+4*res2[indMax, "SD"])
+	}
+	ylim	<- c(0, 1)
+	
+	old.par <- par(mar=c(5,6,5,ifelse(!Legend, 4, 14)))
+	
+	plot(xlim, ylim, axes=FALSE, xlab="", ylab="", main="", type="n", xaxs="i", yaxs="i")
+	USR <- par("usr")
+	PLT <- par("plt")
+	
+	rect(xlim[1], ylim[1], xlim[2], ylim[2], col=BG, border="white")
+	addGrid(x=pretty(xlim, 20), y=seq(0,1,.05), col=col.grid)
+	axis(1, at=pretty(xlim, 10), mgp=c(3, .75, 0), col.ticks="gray60")
+	axis(2, las=1, mgp=c(3, .75, 0), col.ticks="gray60")
+	
+	Means 	<- NULL
+	scl		<- res1[which(p == tail(prob, 1)),]
+	scl		<- dnorm(scl["Mean"], mean=scl["Mean"], sd=scl["SD"])
+	
+	for(i in 1:length(prob))
+	{
+		tmpInd  <- which(p == prob[i])
+		if(Nco == 1)
+			tmp.res <- res1
+		else {
+			if(prob[i] < 0.5)
+				tmp.res <- res1
+			else
+				tmp.res <- res2
+		}
+		tmpData <- rnorm(Nrand, tmp.res[tmpInd, "Mean"], tmp.res[tmpInd, "SD"])
+		Means 	<- c(Means, tmp.res[tmpInd, "Mean"])
+		
+		tmpNclass <- nclass
+		
+		if(nclass<=10)			# automatically determine number of classes in the histogram
+			tmpNclass <- ceiling(	150 * 
+							(qnorm(.999, res1[tmpInd, "Mean"], res1[tmpInd, "SD"]) -
+								qnorm(.001, res1[tmpInd, "Mean"], res1[tmpInd, "SD"]))	/
+							(USR[2] - USR[1]))
+		
+		h 	<- hist(tmpData, plot=FALSE, n=tmpNclass )
+		h$density <- h$density / (scl * 1.5)			# scale normal distribution to half the height of the plot
+		
+		plot(	h, las=1, xlim=xlim, ylim=ylim, col=as.rgb(col[i], alpha), 
+				border="white",add=TRUE, freq=FALSE)
+		if(Nco == 1)	
+			idx <- which(h$breaks >= cutoff[1])
+		else {
+			if(prob[i] < 0.5)
+				idx <- which(h$breaks >= cutoff[1])
+			else
+				idx <- which(h$breaks >= cutoff[2])
+		}		
+		
+		for(j in idx)
+			rect(h$breaks[j], 0, h$breaks[j+1], h$density[j], col=as.rgb(col[i], alpha2), border="white")
+	}
+	
+	abline(v=Means, h=prob, col="gray60", lty=2, lwd=2)
+	
+	mtext(side=3, at=Means, line=0, col="gray60", text=paste0("C", 100*prob))
+	mtext(side=4, at=prob,  line=.2, col="gray60", text=paste0(100*prob, "%"), las=1)
+	mtext(side=1, at=Means, line=1.5, col="gray60", text=signif(Means, digits=digits))
+	
+	Cutoff.def <- list(col="magenta", lty=3, lwd=3)
+	Cutoff.def[names(Cutoff)] <- Cutoff
+	Cutoff <- Cutoff.def
+	Cutoff$v <- cutoff
+	do.call("abline", Cutoff)
+	if(!is.null(Cutoff))
+	{
+		if(Nco == 1)
+			mtext(side=3, line=.75, at=cutoff, text="Cutoff", col=Cutoff$col)
+		else
+		{
+			mtext(side=3, line=.75, at=cutoff[1], text=expression("Cutoff"[1]), col=Cutoff$col)
+			mtext(side=3, line=.75, at=cutoff[2], text=expression("Cutoff"[2]), col=Cutoff$col)
+		}
+	}
+	
+	Title.def <- list(font=4, cex=1.75, line=2, text="Hit Rate Plot Based On Precision Profile")
+	Title.def[names(Title)] <- Title
+	Title <- Title.def
+	Title$side <- 3
+	
+	Xlabel.def <- list(font=3, cex=1.5, line=3, text="Internal Continuous Response (ICR)")
+	Xlabel.def[names(Xlabel)] <- Xlabel
+	Xlabel <- Xlabel.def
+	Xlabel$side <- 1
+	
+	Ylabel.def <- list(font=3, cex=1.5, line=3, text="Hit Rate / Probability [%]")
+	Ylabel.def[names(Ylabel)] <- Ylabel
+	Ylabel <- Ylabel.def
+	Ylabel$side <- 2
+	
+	do.call("mtext", Title)
+	do.call("mtext", Xlabel)
+	do.call("mtext", Ylabel)
+	
+	HRLine.def <- list(lwd=3, col="gray40", lty=1)
+	HRLine.def[names(HRLine)] <- HRLine
+	HRLine <- HRLine.def
+	HRLine$x <- c(xlim[1], res1[,"Mean"], xlim[2])
+	HRLine$y <- c(0, p, 1)
+	do.call("lines", HRLine)
+	if(Nco == 2)
+	{
+		HRLine$x <- c(xlim[1], res2[,"Mean"], xlim[2])
+		if(length(HRLine$col) > 1)
+			HRLine$col <- HRLine$col[2]
+		do.call("lines", HRLine)
+	}
+	if(Legend)
+	{
+		Fill 	<- as.rgb(col[1:length(col)], alpha)
+		if(alpha2 > 0)
+			Fill <- c(Fill, as.rgb(col[1:length(col)], ifelse(alpha+alpha2>1, 1, alpha+alpha2)))
+		
+		Legend 	<- c(	paste0("~N(C", formatC(100*prob, format="s", width=3, flag="-"), " ; SD) < Cutoff"),
+				paste0("~N(C", formatC(100*prob, format="s", width=3, flag="-"), " ; SD) > Cutoff") )
+		LTY 	<- c(rep(0, length(Fill)), HRLine$lty)
+		COL		<- HRLine$col
+		LWD		<- HRLine$lwd
+		Legend	<- c(Legend, paste0("Hitrate", ifelse(Nco==2,1,"")))
+		if(Nco == 2)
+			Legend	<- c(Legend, "Hitrate2")
+		
+		Fill 	<- c(Fill, NA)
+		
+		if(!is.null(Cutoff))
+		{
+			LTY 	<- c(LTY, Cutoff$lty)
+			COL 	<- c(COL, Cutoff$col)
+			LWD 	<- c(LWD, Cutoff$lwd)
+			Legend 	<- c(Legend, "Cutoff")
+			Fill 	<- c(Fill, NA)
+		}
+		
+		
+		legend.rm(	x="center", fill=Fill, legend=Legend, y.intersp=2, 
+				lty=LTY, lwd=LWD, col=COL, bg=BG, 
+				border=c(	rep("white", length(which(!is.na(Fill)))), 
+						rep(BG, length(which(!is.na(Fill))))) )
+	}
+	if(Nco == 1)
+		res <- res1
+	else
+		res <- list(cutoff1=res1, cutoff2=res2)
+	
+	box(col="black")
+	
+	par(old.par)
+	
+	invisible(res)
+}
 
 #' Determine C5 and C95 or any Concentration Cx.
 #' 
@@ -2414,7 +2708,12 @@ t.coef <- function(coeffs0, K=NULL, Maxi=NULL, model=NULL, signJ=NULL, eps=sqrt(
 #' concentration of that sample when measured a large number of times,
 #' 100 * 'Cx'\\% of the measurements lie above 'cutoff'. In case of e.g.
 #' "C5" exactly 5\\% of will be above cutoff, whereas for "C95" 95\\% will
-#' be larger than cutoff.
+#' be larger than cutoff. This follows the CLSI EP12 guideline whenever 
+#' an internal continuous result (ICR) is available and measurement
+#' imprecision can be assumed to be normally distributed. The CLSI EP12
+#' recommends to base derivation of C5 and C95 on the results of intermediate
+#' precision analyses using multiple samples. This includes between-day and 
+#' between-run as additional variance components besides repeatability.
 #' 
 #' @param vfp		(VFP) object representing a precision profile to be used
 #' @param model.no	(integer) specifying which model to use, if NULL the "best"
@@ -2443,20 +2742,32 @@ t.coef <- function(coeffs0, K=NULL, Maxi=NULL, model=NULL, signJ=NULL, eps=sqrt(
 #' # transform list of VCA-objects into required matrix
 #' mat <- getMat.VCA(lst)		# automatically selects "total"
 #' mat
-#' # fit all 9 models batch-wise
+#' # fit all models batch-wise
 #' res <- fit.vfp(model.no=1:10, Data=mat)
 #' # now search for the C5 concentration
 #' deriveCx(res, start=15, cutoff=20, Cx=0.05, plot=TRUE)
 #' deriveCx(res, start=25, cutoff=20, Cx=0.95, plot=TRUE)
 #' deriveCx(res, start=25, cutoff=20, Cx=0.25, plot=TRUE)
 #' deriveCx(res, start=25, cutoff=20, Cx=0.75, plot=TRUE)
+#' 
+#' #
+#' p <- c(seq(.01, .12, .01), seq(.15, .85, .05), seq(.88, .99, .01))
+#' system.time(x <- deriveCx(res, Cx=p, cutoff=20))
 #' }
 
-deriveCx <- function(vfp, model.no=NULL, start, cutoff, Cx=.05, tol=1e-6, plot=FALSE)
+deriveCx <- function(vfp, model.no=NULL, start=NULL, cutoff=NULL, Cx=.05, tol=1e-6, plot=FALSE)
 {
 	stopifnot(class(vfp) == "VFP")
-	stopifnot(is.numeric(start))
 	stopifnot(is.numeric(cutoff))
+	if(is.null(start))
+		start <- cutoff
+	stopifnot(is.numeric(start))
+	if(length(Cx) > 1)
+	{
+		res <- t(sapply(Cx, deriveCx, vfp=vfp, model.no=model.no, start=start, cutoff=cutoff))
+		res <- cbind(Cx=Cx, res)
+		return(res)
+	}
 	stopifnot(Cx > 0 && Cx < 1)
 	Prob <- 1 - Cx
 	Mean <- start
@@ -2477,6 +2788,7 @@ deriveCx <- function(vfp, model.no=NULL, start, cutoff, Cx=.05, tol=1e-6, plot=F
 						border="white", 
 						xlab=paste0("Normal Distribution ~N(", round(Mean, 2), ",", round(SD,4),")"),
 						font.lab=3, cex.lab=1.5)
+				
 				idx <- which(h$breaks >= cutoff)
 				for(i in idx)
 					rect(h$breaks[i], 0, h$breaks[i+1], h$density[i], col="gray50", border="white")
@@ -2543,8 +2855,8 @@ deriveCx <- function(vfp, model.no=NULL, start, cutoff, Cx=.05, tol=1e-6, plot=F
 #' }
 
 predict.VFP <- function(object, model.no=NULL, newdata=NULL, alpha=.05,
-						dispersion=NULL, type=c("vc", "sd", "cv"), 
-						CI.method=c("chisq", "t", "normal"), use.log=FALSE, ...)
+		dispersion=NULL, type=c("vc", "sd", "cv"), 
+		CI.method=c("chisq", "t", "normal"), use.log=FALSE, ...)
 {
 	call 		<- match.call()
 	predOnly 	<- call$predOnly
@@ -2555,7 +2867,7 @@ predict.VFP <- function(object, model.no=NULL, newdata=NULL, alpha=.05,
 	
 	type 		<- match.arg(type[1], choices=c("vc", "sd", "cv"))
 	CI.method	<- match.arg(CI.method[1], choices=c("t", "normal", "chisq"))
-
+	
 	if(is.null(model.no))				# automatically determine best fitting model
 	{
 		AIC <- object$AIC
@@ -2575,7 +2887,7 @@ predict.VFP <- function(object, model.no=NULL, newdata=NULL, alpha=.05,
 		dispersion <- 1
 	}
 	model <- names(object$RSS[num])
-
+	
 	if(is.null(newdata))
 	{
 		Mean 	<- object$Data$Mean
@@ -2588,9 +2900,9 @@ predict.VFP <- function(object, model.no=NULL, newdata=NULL, alpha=.05,
 		if(use.log)
 			newdata$Mean <- exp(newdata$Mean)
 	}
-
+	
 	suppressWarnings(
-		pred <- try(predict(object$Models[[num]], newdata=newdata,
+			pred <- try(predict(object$Models[[num]], newdata=newdata,
 							dispersion=dispersion, type="response", 
 							se=TRUE, ci.type=type, CI.method=CI.method,
 							use.log=use.log, ...),
@@ -2614,7 +2926,7 @@ predict.VFP <- function(object, model.no=NULL, newdata=NULL, alpha=.05,
 			{
 				pred$fit 	<- sqrt(pred$fit)
 				pred$se.fit <- pred$se.fit/(2*pred$fit)
-					
+				
 				if(type == "cv" && !use.log)
 				{
 					pred$fit 	<- 100 * pred$fit / Mean
@@ -2622,13 +2934,13 @@ predict.VFP <- function(object, model.no=NULL, newdata=NULL, alpha=.05,
 				}
 			}
 		}
-
+		
 		if(predOnly)
 			return(pred$fit)
 		
 		pred <- as.data.frame(pred)
 		pred <- cbind(newdata, pred)
-	
+		
 		if(CI.method == "normal")
 		{
 			Qnorm 		<- qnorm(1-alpha/2)
@@ -2649,7 +2961,7 @@ predict.VFP <- function(object, model.no=NULL, newdata=NULL, alpha=.05,
 			CIupper 	<- pred$fit+Qtdist*pred$se.fit
 			CIlower		<- pred$fit-Qtdist*pred$se.fit
 		}
-	
+		
 		if(CI.method %in% c("t", "normal") && !use.log)
 		{
 			pred$fit 	<- exp(pred$fit)
@@ -2659,7 +2971,7 @@ predict.VFP <- function(object, model.no=NULL, newdata=NULL, alpha=.05,
 		
 		if(use.log)
 			pred$Mean <- log(pred$Mean)
-	
+		
 		if(CI.method == "chisq" && use.log)
 		{
 			pred$fit 	<- log(pred$fit)
@@ -2673,7 +2985,7 @@ predict.VFP <- function(object, model.no=NULL, newdata=NULL, alpha=.05,
 				CIupper		<- CIupper  + log(100) - pred$Mean
 			}
 		}
-				
+		
 		if(CI.method != "chisq")
 		{
 			if(!use.log)
@@ -2712,13 +3024,13 @@ predict.VFP <- function(object, model.no=NULL, newdata=NULL, alpha=.05,
 		pred$CIlower 	<- CIlower
 		pred$CIupper 	<- CIupper
 		attr(pred, "conf.level") <- 1-alpha 
-
+		
 		colnames(pred)	<- c("Mean", "Fitted", "SE", "Scale", "LCL", "UCL")
 	}
-
+	
 	if(any(pred$Fitted %in% c(NA, NaN)))
 		warning("Numerical problems occurred during prediction generating 'NaN' and/or 'NA' values!")
-
+	
 	pred
 }
 
@@ -2778,7 +3090,7 @@ predict.VFP <- function(object, model.no=NULL, newdata=NULL, alpha=.05,
 #' }
 
 predictMean <- function(obj, type=c("vc", "sd", "cv"), model.no=NULL, 
-						alpha=.05, newdata=NULL, tol=1e-4, ci=TRUE, ...)
+		alpha=.05, newdata=NULL, tol=1e-4, ci=TRUE, ...)
 {
 	call 	<- match.call()
 	CI.type	<- call$CI.type
@@ -2821,29 +3133,29 @@ predictMean <- function(obj, type=c("vc", "sd", "cv"), model.no=NULL,
 	Max <- max(obj$Data$Mean, na.rm=TRUE)
 	
 	Type <- switch(	type, 
-					vc = "VC",
-					sd = "SD",
-					cv = "CV")
+			vc = "VC",
+			sd = "SD",
+			cv = "CV")
 	
 	# narrow search space, of special interst for functions with multiple intersections with target variance
-
+	
 	# iteratively increase range of X-values if necessary
 	for(i in 1:5)
 	{	
 		cand	<- seq(Min, Max, length.out=100)
 		pred 	<- predict(obj, model.no=model.no, type=type, newdata=cand)
-	
+		
 		above	<- switch(	CI.type,
-							estimate= which(pred$Fitted > newdata),
-							LCL 	= which(pred$LCL 	> newdata),
-							UCL		= which(pred$UCL 	> newdata)
-						 )
+				estimate= which(pred$Fitted > newdata),
+				LCL 	= which(pred$LCL 	> newdata),
+				UCL		= which(pred$UCL 	> newdata)
+		)
 		below	<- switch(	CI.type,
-							estimate= which(pred$Fitted < newdata),
-							LCL 	= which(pred$LCL 	< newdata),
-							UCL	  	= which(pred$UCL 	< newdata)
-						 )	
-						 
+				estimate= which(pred$Fitted < newdata),
+				LCL 	= which(pred$LCL 	< newdata),
+				UCL	  	= which(pred$UCL 	< newdata)
+		)	
+		
 		if((length(above) == 0 || length(below) == 0) )
 		{
 			Max <- Max * 10
@@ -2852,7 +3164,7 @@ predictMean <- function(obj, type=c("vc", "sd", "cv"), model.no=NULL,
 		else
 			break
 	}
-
+	
 	if(CI.type == "estimate" && (length(above) == 0 || length(below) == 0) )
 	{
 		message(paste0("No intersection with variance-function found for specified Y-value up to X=",Max,"!"))
@@ -2860,7 +3172,7 @@ predictMean <- function(obj, type=c("vc", "sd", "cv"), model.no=NULL,
 		colnames(res)[2] <- Type
 		return(res)
 	}
-					 
+	
 	if(length(above) == 0)
 		above <- NULL
 	if(length(below) == 0)
@@ -2878,34 +3190,34 @@ predictMean <- function(obj, type=c("vc", "sd", "cv"), model.no=NULL,
 	}
 	
 	suppressWarnings(
-		if(type == "cv")
-		{			
-			if(!is.null(above))
-			{
-				ind1	<- min(which(above1+1 != above2))
-				Min 	<- cand[ind1]
-			}
-			if(!is.null(below))
-			{
-				ind2	<- min(below)
-				Max		<- cand[ind2]
-			}
-		}
-		else
-		{
-			if(!is.null(above))
-			{
-				ind1	<- min(above)
-				Max 	<- cand[ind1]
-			}
-			if(!is.null(below))
-			{
-				ind2	<- min(which(below1+1 != below2))
-				Min 	<- cand[ind2]
-			}
-		}
+			if(type == "cv")
+					{			
+						if(!is.null(above))
+						{
+							ind1	<- min(which(above1+1 != above2))
+							Min 	<- cand[ind1]
+						}
+						if(!is.null(below))
+						{
+							ind2	<- min(below)
+							Max		<- cand[ind2]
+						}
+					}
+					else
+					{
+						if(!is.null(above))
+						{
+							ind1	<- min(above)
+							Max 	<- cand[ind1]
+						}
+						if(!is.null(below))
+						{
+							ind2	<- min(which(below1+1 != below2))
+							Min 	<- cand[ind2]
+						}
+					}
 	)
-
+	
 	lower <- 0
 	upper <- Max
 	conc  <- lower + diff(c(lower, upper))/2
@@ -2914,12 +3226,12 @@ predictMean <- function(obj, type=c("vc", "sd", "cv"), model.no=NULL,
 	while(1)
 	{
 		pred <- predict(obj, newdata=conc, type=type, model.no=model)
-
+		
 		pred <- switch(	CI.type,
-						estimate = pred[1, "Fitted"],
-						LCL		 = pred[1, "LCL"],
-						UCL		 = pred[1, "UCL"])
-				
+				estimate = pred[1, "Fitted"],
+				LCL		 = pred[1, "LCL"],
+				UCL		 = pred[1, "UCL"])
+		
 		Diff <- abs(newdata - pred)
 		
 		if(Diff < best["Diff"])							# remember best fit in case of non-convergence
@@ -2937,7 +3249,7 @@ predictMean <- function(obj, type=c("vc", "sd", "cv"), model.no=NULL,
 			lower 	<- conc
 			conc 	<- conc + (upper-conc) / 2
 		}
-
+		
 		if(Diff < tol || abs(diff(c(lower, upper))) < tol0*lower)#.Machine$double.eps)
 		{
 			if(Diff >= tol)								# not converged
@@ -2957,7 +3269,7 @@ predictMean <- function(obj, type=c("vc", "sd", "cv"), model.no=NULL,
 					message("Convergence criterion not met, return best approximation!")
 					conc <- best["Est"]
 				}
-
+				
 				Diff <- best["Diff"]
 			}
 			break
@@ -2970,12 +3282,12 @@ predictMean <- function(obj, type=c("vc", "sd", "cv"), model.no=NULL,
 	{
 		# CI for prediction derived from CI of variance at prediction
 		LCL <- UCL <- NULL
-	
+		
 		if(CI.type == "estimate")
 		{
 			LCL	<- predictMean(obj, model.no=model.no, newdata=newdata, alpha=alpha, CI.type="LCL", type=type)$Mean
 			UCL	<- predictMean(obj, model.no=model.no, newdata=newdata, alpha=alpha, CI.type="UCL", type=type)$Mean
-	
+			
 			if(LCL < UCL)						# on variance-scale function is increasing on CV-scale decreasing
 				CI  <- c(LCL=LCL, UCL=UCL)
 			else
@@ -2983,7 +3295,7 @@ predictMean <- function(obj, type=c("vc", "sd", "cv"), model.no=NULL,
 		}
 		
 		res <- data.frame(Mean=conc, Yvalue=newdata, Diff=Diff)
-			
+		
 		if(CI.type == "estimate")
 		{
 			res$LCL <- CI["LCL"]
@@ -2991,7 +3303,7 @@ predictMean <- function(obj, type=c("vc", "sd", "cv"), model.no=NULL,
 			colnames(res)[2] <- Type
 		}	
 	}
-
+	
 	return(res)
 }
 
@@ -3325,8 +3637,8 @@ predict.modelEP17 <- function(	object, newdata=NULL, alpha=.05,
 #' }
 
 legend.rm <- function(	x=c("center","bottomright", "bottom", "bottomleft", 
-						"left", "topleft", "top", "topright", "right"), 
-					y=NULL, offset=.05, ...)
+				"left", "topleft", "top", "topright", "right"), 
+		y=NULL, offset=.05, ...)
 {
 	stopifnot(	is.numeric(x) || is.character(x) )
 	if(is.character(x))
@@ -3347,7 +3659,7 @@ legend.rm <- function(	x=c("center","bottomright", "bottom", "bottomleft",
 	
 	wrm <- FIG[2] - PLT[2]						# width right margin
 	hrm	<- PLT[4] - PLT[3]
-
+	
 	if(is.character(x))
 	{
 		X.orig	<- x
@@ -3377,15 +3689,15 @@ legend.rm <- function(	x=c("center","bottomright", "bottom", "bottomleft",
 			y 		<- PLT[3] + offset * hrm
 		}
 	}
-
+	
 	x <- grconvertX(x, from="nic", to="user")
 	y <- grconvertY(y, from="nic", to="user")
-
+	
 	args$x 		<- x
 	args$y 		<- y
 	args$xjust 	<- xjust
 	args$yjust 	<- yjust
-
+	
 	do.call(legend, args)
 	par(xpd=FALSE)
 }

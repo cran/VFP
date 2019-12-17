@@ -4,8 +4,8 @@
 \alias{deriveCx}
 \title{Determine C5 and C95 or any Concentration Cx.}
 \usage{
-deriveCx(vfp, model.no = NULL, start, cutoff, Cx = 0.05, tol = 1e-06,
-  plot = FALSE)
+deriveCx(vfp, model.no = NULL, start = NULL, cutoff = NULL, Cx = 0.05,
+  tol = 1e-06, plot = FALSE)
 }
 \arguments{
 \item{vfp}{(VFP) object representing a precision profile to be used}
@@ -35,7 +35,12 @@ This function makes use of a precision profile, determining the
 concentration of that sample when measured a large number of times,
 100 * 'Cx'\\% of the measurements lie above 'cutoff'. In case of e.g.
 "C5" exactly 5\\% of will be above cutoff, whereas for "C95" 95\\% will
-be larger than cutoff.
+be larger than cutoff. This follows the CLSI EP12 guideline whenever 
+an internal continuous result (ICR) is available and measurement
+imprecision can be assumed to be normally distributed. The CLSI EP12
+recommends to base derivation of C5 and C95 on the results of intermediate
+precision analyses using multiple samples. This includes between-day and 
+between-run as additional variance components besides repeatability.
 }
 \examples{
 \dontrun{
@@ -47,13 +52,17 @@ lst <- anovaVCA(y~(device+lot)/day/run, VCAdata1, by="sample")
 # transform list of VCA-objects into required matrix
 mat <- getMat.VCA(lst)		# automatically selects "total"
 mat
-# fit all 9 models batch-wise
+# fit all models batch-wise
 res <- fit.vfp(model.no=1:10, Data=mat)
 # now search for the C5 concentration
 deriveCx(res, start=15, cutoff=20, Cx=0.05, plot=TRUE)
 deriveCx(res, start=25, cutoff=20, Cx=0.95, plot=TRUE)
 deriveCx(res, start=25, cutoff=20, Cx=0.25, plot=TRUE)
 deriveCx(res, start=25, cutoff=20, Cx=0.75, plot=TRUE)
+
+#
+p <- c(seq(.01, .12, .01), seq(.15, .85, .05), seq(.88, .99, .01))
+system.time(x <- deriveCx(res, Cx=p, cutoff=20))
 }
 }
 \author{

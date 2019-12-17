@@ -67,8 +67,8 @@ these information. There are following variance-functions covered: \cr
  \item{constant variance}{ \eqn{sigma^2}}
  \item{constant CV}{\eqn{ sigma^2=beta_1*u^2 }}
  \item{mixed constant, proportional variance}{ \eqn{sigma^2=beta_1+beta*u^2}}
- \item{constrained power model, constant exponent}{ \eqn{sigma^2=(beta_1+beta_2*u)^C}}
- \item{alternative constrained power model}{ \eqn{sigma^2=beta_1+beta_2*u^C}}
+ \item{constrained power model, constant exponent}{ \eqn{sigma^2=(beta_1+beta_2*u)^K}}
+ \item{alternative constrained power model}{ \eqn{sigma^2=beta_1+beta_2*u^K}}
  \item{alternative unconstrained power model for VF's with a minimum}{ \eqn{sigma^2=beta_1+beta_2*u+beta_3*u^J}}
  \item{alternative unconstrained power model}{ \eqn{sigma^2=beta_1+beta_2*u^J}}
  \item{unconstrained power model (default model of Sadler)}{ \eqn{sigma^2=(beta_1 + beta_2 * u)^J}}
@@ -79,7 +79,7 @@ Fitting all ten models is somehow redundant if constant 'C' is chosen to be equa
 equivalent and these are constrained versions of model 7 where the exponent is also estimated. The latter also applies to model
 4 which is a constrained version of model 8. Nevertheless, since computation time is not critical here for typical
 precision-profiles (of in-vitro diagnostics precision experiments) we chose to offer batch-processing as well.
-During computation, all models are internally reparametrized so as to guarantee that the variance function is positive in the
+During computation, all models are internally reparameterized so as to guarantee that the variance function is positive in the
 range 'u' from 0 to 'u_max'. In models 7 and 8, 'J' is restricted to 0.1<J<10 to avoid the appearance of sharp hooks. 
 Occasionally, these restrictions may lead to a failure of convergence. This is then a sign that the model parameters
 are on the boundary and that the model fits the data very badly. This should not be taken as reason for concern. 
