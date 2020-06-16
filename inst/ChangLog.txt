@@ -1,3 +1,14 @@
+Version 1.3
+-----------
+
+- issue was fixed if input data contained variables with default names but user specified
+  different variables, this had no effect because the variables with default names were used
+  for the fitting
+- condition handler was updated indicating an error if no result is returned by
+  package gnm
+- multiple issues were reported for model three which did not return a valid result,
+  start value procedure for this model was improved 
+
 Version 1.2
 -----------
 

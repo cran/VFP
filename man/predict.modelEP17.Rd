@@ -4,9 +4,15 @@
 \alias{predict.modelEP17}
 \title{Predict Method for Objects of Class 'modelEP17'.}
 \usage{
-\method{predict}{modelEP17}(object, newdata = NULL, alpha = 0.05,
-  ci.type = c("vc", "sd", "cv"), CI.method = c("chisq", "t", "normal"),
-  use.log = FALSE, ...)
+\method{predict}{modelEP17}(
+  object,
+  newdata = NULL,
+  alpha = 0.05,
+  ci.type = c("vc", "sd", "cv"),
+  CI.method = c("chisq", "t", "normal"),
+  use.log = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{(object) of class 'modelEP17'}

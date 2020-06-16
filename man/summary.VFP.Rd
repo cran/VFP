@@ -4,8 +4,13 @@
 \alias{summary.VFP}
 \title{Summary Objects of Class 'VFP'}
 \usage{
-\method{summary}{VFP}(object, model.no = NULL, digits = 4,
-  type = c("simple", "complex"), ...)
+\method{summary}{VFP}(
+  object,
+  model.no = NULL,
+  digits = 4,
+  type = c("simple", "complex"),
+  ...
+)
 }
 \arguments{
 \item{object}{(object) of class 'VFP'}

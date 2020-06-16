@@ -4,8 +4,16 @@
 \alias{predictMean}
 \title{Finding X-Value for Given Y-Value Using a Bisection-Approach.}
 \usage{
-predictMean(obj, type = c("vc", "sd", "cv"), model.no = NULL,
-  alpha = 0.05, newdata = NULL, tol = 1e-04, ci = TRUE, ...)
+predictMean(
+  obj,
+  type = c("vc", "sd", "cv"),
+  model.no = NULL,
+  alpha = 0.05,
+  newdata = NULL,
+  tol = 1e-04,
+  ci = TRUE,
+  ...
+)
 }
 \arguments{
 \item{obj}{(object) of class 'VFP'}
@@ -58,7 +66,7 @@ res.CA19_9 <- fit.vfp(mat.CA19_9, 1:10)
 summary(res.CA19_9)
 print(res.CA19_9)
 
-# predict CA19_9-concentration with 5\\\% CV
+# predict CA19_9-concentration with 5\\% CV
 predictMean(res.CA19_9, newdata=5) 
 
 # this is used in function plot.VFP as well

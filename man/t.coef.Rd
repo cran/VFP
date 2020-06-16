@@ -4,8 +4,15 @@
 \alias{t.coef}
 \title{Transformation of Coefficients.}
 \usage{
-t.coef(coeffs0, K = NULL, Maxi = NULL, model = NULL, signJ = NULL,
-  eps = sqrt(.Machine$double.eps), ...)
+\method{t}{coef}(
+  coeffs0,
+  K = NULL,
+  Maxi = NULL,
+  model = NULL,
+  signJ = NULL,
+  eps = sqrt(.Machine$double.eps),
+  ...
+)
 }
 \arguments{
 \item{coeffs0}{(numeric) vector of function coefficients to be transformed into the

@@ -4,8 +4,13 @@
 \alias{legend.rm}
 \title{Add Legend to Right Margin.}
 \usage{
-legend.rm(x = c("center", "bottomright", "bottom", "bottomleft", "left",
-  "topleft", "top", "topright", "right"), y = NULL, offset = 0.05, ...)
+legend.rm(
+  x = c("center", "bottomright", "bottom", "bottomleft", "left", "topleft", "top",
+    "topright", "right"),
+  y = NULL,
+  offset = 0.05,
+  ...
+)
 }
 \arguments{
 \item{x}{(character, numeric) either one of the character strings "center","bottomright", "bottom", "bottomleft", 

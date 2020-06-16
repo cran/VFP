@@ -26,7 +26,6 @@ powfun3 <- function(x)
 {
 	cutval 	<- 0.95
 	xmax	<- max(x)
-	
 	list(
 			predictors=list(beta1 = 1, beta2 = 1), 
 			variables=list(substitute(x)),
@@ -275,13 +274,13 @@ conditionHandler <- function(expr,  file=NULL)
 	WHandler <- function(w) 
 	{
 		status <<- 1
-		Warnings <<- c(Warnings, list(w))
+		Warnings <<- c(Warnings, w$message)#list(w))
 		invokeRestart("muffleWarning")		
 	}
 	# handle messages
 	MHandler <- function(m)
 	{
-		Messages <<- c(Messages, list(m))
+		Messages <<- c(Messages, m$message)#list(m))
 		invokeRestart("muffleMessage")		
 	}
 	# handle errors
@@ -295,13 +294,21 @@ conditionHandler <- function(expr,  file=NULL)
 	{
 		result <- try(withCallingHandlers(expr, warning = WHandler, message=MHandler), silent=TRUE)
 	}
-	
-	if(class(result[[1]]) == "try-error") # || class(result) == "try-error")
+
+	if(class(result[[1]])[1] == "try-error" || class(result)[1] == "try-error")
 	{		
 		Errors <- attr(result, "condition")$message
 		result <- NA
 		status <- 2
 	}
+	
+	if(is.null(result))
+	{
+		status <- 2
+	#	Errors <- "A model could not be fitted. Please check 'messages' and 'warnings'!"
+		Errors <- paste("A model could not be fitted:", Warnings, Messages, sep=" | ")
+	}
+
 	res <- list(result = result, status=status, warnings = Warnings, errors = Errors, messages = Messages)
 	
 	res
@@ -645,19 +652,22 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			RSS[1] 		<- sum((res.gnm1$y-res.gnm1$fitted.values)^2)
 			AIC[1]		<- res.gnm1$aic
 			Deviance[1] <- res.gnm1$deviance
-			if(tmp.res$status == 1)
-				warnings <- c(warnings, paste0("Model 1 (Warnings): ", tmp.res$warnings))
-			if(!is.null(tmp.res$messages))
-				messages <- c(messages, paste0("Model 1 (Messages): ", tmp.res$messages))
+#			if(tmp.res$status == 1)
+#				warnings <- c(warnings, paste0("Model 1 (Warnings): ", tmp.res$warnings))
+#			if(!is.null(tmp.res$messages))
+#				messages <- c(messages, paste0("Model 1 (Messages): ", tmp.res$messages))
 			
 			tmp.msg <- " ... finished."
 		}
 		else
 		{
-			errors 	<- c(errors, paste0("Model 1 (Errors): ", tmp.res$errors))
+			errors 	<- c(errors, paste0("Model 1 (Errors original space): ", tmp.res$errors))
 			tmp.msg <- " ... could not be fitted due to errors."	
 		}
 		
+		messages <- c(messages, paste0("Model 1 (Messages): ", tmp.res$messages))
+		warnings <- c(warnings, paste0("Model 1 (Warnings): ", tmp.res$warnings))
+				
 		startvals   <- NULL
 		cat(tmp.msg)
 	}
@@ -683,19 +693,22 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			RSS[2] 		<- sum((res.gnm2$y-res.gnm2$fitted.values)^2)
 			AIC[2]		<- res.gnm2$aic
 			Deviance[2] <- res.gnm2$deviance
-			if(tmp.res$status == 1)
-				warnings <- c(warnings, paste0("Model 2 (Warnings): ", tmp.res$warnings))
-			if(!is.null(tmp.res$messages))
-				messages <- c(messages, paste0("Model 2 (Messages): ", tmp.res$messages))
+#			if(tmp.res$status == 1)
+#				warnings <- c(warnings, paste0("Model 2 (Warnings): ", tmp.res$warnings))
+#			if(!is.null(tmp.res$messages))
+#				messages <- c(messages, paste0("Model 2 (Messages): ", tmp.res$messages))
 			
 			tmp.msg <- " ... finished."
 		}
 		else
 		{
-			errors 	<- c(errors, paste0("Model 2 (Errors): ", tmp.res$errors))
+			errors 	<- c(errors, paste0("Model 2 (Errors original space): ", tmp.res$errors))
 			tmp.msg <- " ... could not be fitted due to errors."	
 		}
 		
+		messages <- c(messages, paste0("Model 2 (Messages): ", tmp.res$messages))
+		warnings <- c(warnings, paste0("Model 2 (Warnings): ", tmp.res$warnings))
+				
 		startvals   <- NULL
 		cat(tmp.msg)
 	}
@@ -703,57 +716,66 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 	# models 3 4, and 5 are covered by models and, therefore, do not need to be fitted separately if the more
 	# general models optimizing the exponent are fitted per default
 	
-	if(3 %in% model.no)
-	{
+
+	if (3 %in% model.no) {
 		cat("\nModel 3 ")
-		mu 				<- Mu[[3]] <- Data[, "Mean"]^2
-		mumax			<- max(mu)
-		startweights 	<- pweights/startVC^2
-		
-		if(is.null(startvals))
-		{
-			st <- lm(VC ~ mu, data=Data,weights=startweights)
-			startvals <- t.coef(st$coefficients, Maxi=mumax,model=3)
-		}
-		else
-		{
-			startvals <- t.coef(startvals,Maxi=mumax,model=3)
+		mu <- Mu[[3]] <- Data[, "Mean"]^2
+		mumax <- max(mu)
+		startweights <- pweights/startVC^2
+		if (is.null(startvals)) {
+			st <- lm(VC ~ mu, data = Data, weights = startweights)$coefficients
+			if(st[1]>0) {
+				if ((st[1]+st[2]*mumax)<=0) {
+					st[2]<- -st[1]/mumax
+				}
+			}else{
+				st[1]<- mean(Data$VC)/1000
+			}
+			
+			startvals <- t.coef(st, Maxi = mumax,
+					model = 3)
+		} else {
+			startvals <- t.coef(startvals, Maxi = mumax, model = 3)
 		}
 		my.form3	<- VC~ -1 + powfun3(mu) #quadratic model
-		tmp.res 	<- conditionHandler(gnm(formula = my.form3, family = Gamma(link = "identity"), data = Data, weights = pweights,
-						start=startvals, trace=TRUE), file="./stdout.log")
-		
+		tmp.res 	<- conditionHandler(gnm(formula = my.form3, family = Gamma(link = "identity"), data = Data, weights = pweights, start=startvals, trace=TRUE), file="./stdout.log")
+
 		if(tmp.res$status != 2)
 		{
 			coeffs 			<- bt.coef(tmp.res$result, model=3)
+			tmp.aic			<- tmp.res$result$aic
 			my.form3simple 	<- VC ~ powfun3simple(Mean)-1
 			tmp.res 		<- conditionHandler(gnm(formula = my.form3simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
-							start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
+												start=coeffs, trace=TRUE,iterMax=100), file="./stdout.log")
+
 			if(tmp.res$status != 2)
 			{				
 				res.gnm3 		<- tmp.res$result
 				RSS[3] 			<- sum((res.gnm3$y-res.gnm3$fitted.values)^2)
 				AIC[3]			<- res.gnm3$aic
 				Deviance[3] 	<- res.gnm3$deviance
-				if(tmp.res$status == 1)
-					warnings 	<- c(warnings, paste0("Model 3 (Warnings): ", tmp.res$warnings))
-				if(!is.null(tmp.res$messages))
-					messages <- c(messages, paste0("Model 3 (Messages): ", tmp.res$messages))
+#				if(tmp.res$status == 1)
+#					warnings 	<- c(warnings, paste0("Model 3 (Warnings): ", tmp.res$warnings))
+#				if(!is.null(tmp.res$messages))
+#					messages <- c(messages, paste0("Model 3 (Messages): ", tmp.res$messages))
 				
 				tmp.msg <- " ... finished."
 			}
 			else
 			{
 				res.gnm3 	<- NULL
-				errors 		<- c(errors, paste0("Model 3 (Errors): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
-				tmp.msg 	<- " ... could not be fitted due to errors."
+				errors 		<- c(errors, paste0("Model 3 (Errors original space): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates.\n"))
+				tmp.msg 	<- paste(" ... parameters found: ", paste(paste(c("beta_1", "beta_2"), Signif(coeffs, 6), sep="="), collapse=", "),  paste(" (AIC=", Signif(tmp.aic, 6), ")", sep=""), ", but final fit with 'gnm' failed!", sep="")
 			}
 		}
 		else
 		{
-			errors 	<- c(errors, paste0("Model 3 (Errors): ", tmp.res$errors))
+			errors 	<- c(errors, paste0("Model 3 (Errors transformed space): ", tmp.res$errors))
 			tmp.msg <- " ... could not be fitted due to errors."
 		}
+		
+		messages <- c(messages, paste0("Model 3 (Messages): ", tmp.res$messages))
+		warnings <- c(warnings, paste0("Model 3 (Warnings): ", tmp.res$warnings))
 		
 		startvals   <- NULL
 		cat(tmp.msg)
@@ -783,6 +805,7 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 		if(tmp.res$status != 2)
 		{
 			coeffs 	<- bt.coef(tmp.res$result,K=K, model=4)#
+			tmp.aic <- tmp.res$result$aic
 			my.form4simple 	<- VC~-1+powfun4simple(Mean, K) #fixed power model 
 			tmp.res <- conditionHandler(gnm(formula = my.form4simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
 							start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
@@ -793,26 +816,28 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 				RSS[4] 		<- sum((res.gnm4$y-res.gnm4$fitted.values)^2)
 				AIC[4]		<- res.gnm4$aic
 				Deviance[4] <- res.gnm4$deviance
-				if(tmp.res$status == 1)
-					warnings 	<- c(warnings, paste0("Model 4 (Warnings): ", tmp.res$warnings))
-				if(!is.null(tmp.res$messages))
-					messages <- c(messages, paste0("Model 4 (Messages): ", tmp.res$messages))
+#				if(tmp.res$status == 1)
+#					warnings 	<- c(warnings, paste0("Model 4 (Warnings): ", tmp.res$warnings))
+#				if(!is.null(tmp.res$messages))
+#					messages <- c(messages, paste0("Model 4 (Messages): ", tmp.res$messages))
 				
 				tmp.msg <- " ... finished."
 			}
 			else
 			{
-				errors 	<- c(errors, paste0("Model 4 (Errors): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
-				tmp.msg <- " ... could not be fitted due to errors."
+				errors 	<- c(errors, paste0("Model 4 (Errors original space): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
+				tmp.msg <- paste(" ... parameters found: ", paste(paste(c("beta_1", "beta_2"), Signif(coeffs, 6), sep="="), collapse=", "),  paste(" (AIC=", Signif(tmp.aic, 6), ")", sep=""), ", but final fit with 'gnm' failed!", sep="")
 			}
 		}
 		else
 		{
 			res.gnm4 	<- NULL
-			errors 		<- c(errors, paste0("Model 4 (Errors): ", tmp.res$errors))
+			errors 		<- c(errors, paste0("Model 4 (Errors transformed space): ", tmp.res$errors))
 			tmp.msg 	<- " ... could not be fitted due to errors."
 		}
-		
+		messages <- c(messages, paste0("Model 4 (Messages): ", tmp.res$messages))
+		warnings <- c(warnings, paste0("Model 4 (Warnings): ", tmp.res$warnings))
+				
 		startvals 	<- NULL				# re-set start values
 		cat(tmp.msg)
 	}
@@ -843,6 +868,7 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			if(tmp.res$status != 2)
 			{
 				coeffs 	<- bt.coef(tmp.res$result,K=K, model=5)
+				tmp.aic <- tmp.res$result$aic
 				my.form5simple <- VC~powfun5simple(Mean,K)-1
 				tmp.res <- conditionHandler(gnm(formula = my.form5simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
 								start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
@@ -853,26 +879,28 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 					RSS[5] 		<- sum((res.gnm5$y-res.gnm5$fitted.values)^2)
 					AIC[5]		<- res.gnm5$aic
 					Deviance[5] <- res.gnm5$deviance
-					if(tmp.res$status == 1)
-						warnings 	<- c(warnings, paste0("Model 5 (Warnings): ", tmp.res$warnings))
-					if(!is.null(tmp.res$messages))
-						messages <- c(messages, paste0("Model 5 (Messages): ", tmp.res$messages))
+#					if(tmp.res$status == 1)
+#						warnings 	<- c(warnings, paste0("Model 5 (Warnings): ", tmp.res$warnings))
+#					if(!is.null(tmp.res$messages))
+#						messages <- c(messages, paste0("Model 5 (Messages): ", tmp.res$messages))
 					
 					tmp.msg <- " ... finished."
 				}
 				else
 				{
-					errors 	<- c(errors, paste0("Model 5 (Errors): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
-					tmp.msg <- " ... could not be fitted due to errors.\n"	
+					errors 	<- c(errors, paste0("Model 5 (Errors original space): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
+					tmp.msg <- paste(" ... parameters found: ", paste(paste(c("beta_1", "beta_2"), Signif(coeffs, 6), sep="="), collapse=", "),  paste(" (AIC=", Signif(tmp.aic, 6), ")", sep=""), ", but final fit with 'gnm' failed!", sep="")	
 				}
 			}
 			else
 			{
 				res.gnm5 	<- NULL
-				errors 		<- c(errors, paste0("Model 5 (Errors): ", tmp.res$errors))
+				errors 		<- c(errors, paste0("Model 5 (Errors transformed space): ", tmp.res$errors))
 				tmp.msg 	<- " ... could not be fitted due to errors.\n"	
 			}
-			
+			messages <- c(messages, paste0("Model 5 (Messages): ", tmp.res$messages))
+			warnings <- c(warnings, paste0("Model 5 (Warnings): ", tmp.res$warnings))
+						
 			startvals   <- NULL
 			cat(tmp.msg)
 		}
@@ -904,24 +932,24 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 				startvals	<-t.coef(c(st$coefficients,J),model=6)
 				tmp.res 	<- conditionHandler(gnm(formula = my.form6, family = Gamma(link = "identity"), data = Data, weights = pweights,
 								start=startvals, trace=TRUE), file="./stdout.log")							
-				
+	
 				if(tmp.res$status != 2)
 				{
 					if(!is.null(tmp.res$result) && tmp.res$result$deviance<tempdev)
 					{
 						res.gnm6 <- tmp.res$result
 						tempdev  <- res.gnm6$deviance
-						if(tmp.res$status == 1)
-							warnings <- c(warnings, paste0("Model 6 (Warnings): ", tmp.res$warnings))
-						if(!is.null(tmp.res$messages))
-							messages <- c(messages, paste0("Model 6 (Messages): ", tmp.res$messages))
+#						if(tmp.res$status == 1)
+#							warnings <- c(warnings, paste0("Model 6 (Warnings): ", tmp.res$warnings))
+#						if(!is.null(tmp.res$messages))
+#							messages <- c(messages, paste0("Model 6 (Messages): ", tmp.res$messages))
 						
 						tmp.msg <- " ... finished."
 					}
 				}
 				else
-					errors <- c(errors, paste0("Model 6 generated following error: ", tmp.res$errors))
-			}			
+					errors <- c(errors, paste0("Model 6 (Errors transformed space): ", tmp.res$errors))
+			}	
 		}
 		else									# user-specified start values
 		{
@@ -931,16 +959,16 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			if(tmp.res$status != 2)
 			{
 				res.gnm6 <- tmp.res$result
-				if(tmp.res$status == 1)
-					warnings <- c(warnings, paste0("Model 6 (Warnings): ", tmp.res$warnings))
-				if(!is.null(tmp.res$messages))
-					messages <- c(messages, paste0("Model 6 (Messages): ", tmp.res$messages))
+#				if(tmp.res$status == 1)
+#					warnings <- c(warnings, paste0("Model 6 (Warnings): ", tmp.res$warnings))
+#				if(!is.null(tmp.res$messages))
+#					messages <- c(messages, paste0("Model 6 (Messages): ", tmp.res$messages))
 				
 				tmp.msg <- " ... finished.\n"
 			}
 			else
 			{
-				errors 	<- c(errors, paste0("Model 6 (Errors): ", tmp.res$errors))
+				errors 	<- c(errors, paste0("Model 6 (Errors transformed space): ", tmp.res$errors))
 				tmp.msg <- " ... could not be fitted due to errors."		
 			}
 		}
@@ -948,9 +976,11 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 		if(!is.null(res.gnm6))
 		{   
 			coeffs 			<- bt.coef(res.gnm6, model=6)#
+			tmp.aic 		<- res.gnm6$aic
 			my.form6simple 	<- VC~-1+powfun6simple(Mean)
 			tmp.res 		<- conditionHandler(gnm(formula = my.form6simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
 							start=coeffs, trace=TRUE, iterMax=0), file="./stdout.log")
+
 			if(tmp.res$status != 2)
 			{
 				res.gnm6 		<- tmp.res$result							 
@@ -961,11 +991,14 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			else
 			{
 				res.gnm6 	<- NULL
-				errors 		<- c(errors, paste0("Model 6 (Errors): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
-				tmp.msg 	<- " ... could not be fitted due to errors."
+				errors 		<- c(errors, paste0("Model 6 (Errors original space): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
+				tmp.msg 	<- paste(" ... parameters found: ", paste(paste(c("beta_1", "beta_2", "beta_3", "J"), Signif(coeffs, 6), sep="="), collapse=", "),  paste(" (AIC=", Signif(tmp.aic, 6), ")", sep=""), ", but final fit with 'gnm' failed!", sep="")
 			}
 		}
 		
+		messages <- c(messages, paste0("Model 6 (Messages): ", tmp.res$messages))
+		warnings <- c(warnings, paste0("Model 6 (Warnings): ", tmp.res$warnings))
+				
 		startvals 	<- NULL
 		cat(tmp.msg)
 	}
@@ -995,16 +1028,16 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 					{
 						res.gnm7 <- tmp.res$result
 						tempdev  <- res.gnm7$deviance
-						if(tmp.res$status == 1)
-							warnings <- c(warnings, paste0("Model 7 (Warnings): ", tmp.res$warnings))
-						if(!is.null(tmp.res$messages))
-							messages <- c(messages, paste0("Model 7 (Messages): ", tmp.res$messages))
+#						if(tmp.res$status == 1)
+#							warnings <- c(warnings, paste0("Model 7 (Warnings): ", tmp.res$warnings))
+#						if(!is.null(tmp.res$messages))
+#							messages <- c(messages, paste0("Model 7 (Messages): ", tmp.res$messages))
 						
 						tmp.msg <- " ... finished."
 					}
 				}
 				else
-					errors <- c(errors, paste0("Model 7 (Errors): ", tmp.res$errors))
+					errors <- c(errors, paste0("Model 7 (Errors transformed space): ", tmp.res$errors))
 			}
 		}
 		else
@@ -1018,22 +1051,23 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			if(tmp.res$status != 2)
 			{
 				res.gnm7 <- tmp.res$result
-				if(tmp.res$status == 1)
-					warnings <- c(warnings, paste0("Model 7 (Warnings): ", tmp.res$warnings))
-				if(!is.null(tmp.res$messages))
-					messages <- c(messages, paste0("Model 7 (Messages): ", tmp.res$messages))
-				
+#				if(tmp.res$status == 1)
+#					warnings <- c(warnings, paste0("Model 7 (Warnings): ", tmp.res$warnings))
+#				if(!is.null(tmp.res$messages))
+#					messages <- c(messages, paste0("Model 7 (Messages): ", tmp.res$messages))
+#				
 				tmp.msg <- " ... finished."
 			}
 			else
 			{
-				errors 	<- c(errors, paste0("Model 7 (Errors): ", tmp.res$errors))
+				errors 	<- c(errors, paste0("Model 7 (Errors transformed space): ", tmp.res$errors))
 				tmp.msg	<- " ... could not be fitted due to errors."
 			}			
 		}
 		if(!is.null(res.gnm7))
 		{
 			coeffs 	<- bt.coef(res.gnm7, model=7)#
+			tmp.aic <- res.gnm7$aic
 			my.form7simple <- VC~-1+powfun7simple(Mean)
 			tmp.res <- conditionHandler(gnm(formula = my.form7simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
 							start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
@@ -1048,10 +1082,13 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			else
 			{
 				res.gnm7	<- NULL
-				errors 		<- c(errors, paste0("Model 7 (Errors): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
-				tmp.msg		<- " ... could not be fitted due to errors."
+				errors 		<- c(errors, paste0("Model 7 (Errors original space): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
+				tmp.msg		<- paste(" ... parameters found: ", paste(paste(c("beta_1", "beta_2", "J"), Signif(coeffs, 6), sep="="), collapse=", "),  paste(" (AIC=", Signif(tmp.aic, 6), ")", sep=""), ", but final fit with 'gnm' failed!", sep="")
 			}	
 		}
+		messages <- c(messages, paste0("Model 7 (Messages): ", tmp.res$messages))
+		warnings <- c(warnings, paste0("Model 7 (Warnings): ", tmp.res$warnings))
+		
 		startvals 	<- NULL
 		cat(tmp.msg)
 	}
@@ -1089,17 +1126,17 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 							res.gnm8 <- tmp.res$result
 							sgnJ <- signJ
 							tempdev  <- res.gnm8$deviance
-							if(tmp.res$status == 1)
-								warnings <- c(warnings, paste0("Model 8 (Warnings): ", tmp.res$warnings))
-							if(!is.null(tmp.res$messages))
-								messages <- c(messages, paste0("Model 8 (Messages): ", tmp.res$messages))
+#							if(tmp.res$status == 1)
+#								warnings <- c(warnings, paste0("Model 8 (Warnings): ", tmp.res$warnings))
+#							if(!is.null(tmp.res$messages))
+#								messages <- c(messages, paste0("Model 8 (Messages): ", tmp.res$messages))
 							
 							tmp.msg <- " ... finished."
 						}
 					}
 				}
 				else
-					errors <- c(errors, paste0("Model 8 (Errors): ", tmp.res$errors))
+					errors <- c(errors, paste0("Model 8 (Errors transformed space): ", tmp.res$errors))
 			}
 			for(ldJ in -3:3)
 			{
@@ -1122,17 +1159,17 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 							res.gnm8 <- tmp.res$result
 							sgnJ <- signJ
 							tempdev  <- res.gnm8$deviance
-							if(tmp.res$status == 1)
-								warnings <- c(warnings, paste0("Model 8 (Warnings): ", tmp.res$warnings))
-							if(!is.null(tmp.res$messages))
-								messages <- c(messages, paste0("Model 8 (Messages): ", tmp.res$messages))
+#							if(tmp.res$status == 1)
+#								warnings <- c(warnings, paste0("Model 8 (Warnings): ", tmp.res$warnings))
+#							if(!is.null(tmp.res$messages))
+#								messages <- c(messages, paste0("Model 8 (Messages): ", tmp.res$messages))
 							
 							tmp.msg <- " ... finished."
 						}
 					}
 				}
 				else
-					errors <- c(errors, paste0("Model 8 (Errors): ", tmp.res$errors))
+					errors <- c(errors, paste0("Model 8 (Errors transformed space): ", tmp.res$errors))
 			}		
 		}
 		else							# user-specified startvalues
@@ -1157,23 +1194,24 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 				{
 					res.gnm8 <- tmp.res$result
 					sgnJ <- signJ
-					if(tmp.res$status == 1)
-						warnings <- c(warnings, paste0("Model 8 (Warnings): ", tmp.res$warnings))
-					if(!is.null(tmp.res$messages))
-						messages <- c(messages, paste0("Model 8 (Messages): ", tmp.res$messages))
+#					if(tmp.res$status == 1)
+#						warnings <- c(warnings, paste0("Model 8 (Warnings): ", tmp.res$warnings))
+#					if(!is.null(tmp.res$messages))
+#						messages <- c(messages, paste0("Model 8 (Messages): ", tmp.res$messages))
 					
 					tmp.msg <- " ... finished."
 				}
 			}
 			else
 			{
-				errors 	<- c(errors, paste0("Model 8 (Errors): ", tmp.res$errors))
+				errors 	<- c(errors, paste0("Model 8 (Errors transformed space): ", tmp.res$errors))
 				tmp.msg	<- " ... could not be fitted due to errors."
 			}
 		}
 		if(!is.null(res.gnm8))
 		{
 			coeffs 	<- bt.coef(res.gnm8,signJ=sgnJ, model=8)
+			tmp.aic <- res.gnm8$aic
 			my.form8simple <- VC~-1+powfun8simple(Mean)
 			tmp.res <- conditionHandler(gnm(formula = my.form8simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
 							start=coeffs, trace=TRUE,iterMax=0), file="./stdout.log")
@@ -1189,10 +1227,12 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			else
 			{
 				res.gnm8	<- NULL
-				errors 		<- c(errors, paste0("Model 8 (Errors): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
-				tmp.msg		<- " ... could not be fitted due to errors."
+				errors 		<- c(errors, paste0("Model 8 (Errors original space): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
+				tmp.msg		<- paste(" ... parameters found: ", paste(paste(c("beta_1", "beta_2", "J"), Signif(coeffs, 6), sep="="), collapse=", "), paste(" (AIC=", Signif(tmp.aic, 6), ")", sep=""), ", but final fit with 'gnm' failed!", sep="")
 			}	
 		}
+		messages <- c(messages, paste0("Model 8 (Messages): ", tmp.res$messages))
+		warnings <- c(warnings, paste0("Model 8 (Warnings): ", tmp.res$warnings))
 		
 		startvals 		<- NULL
 		cat(tmp.msg)
@@ -1221,23 +1261,23 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 		if(tmp.res$status != 2)
 		{
 			res.gnm9 <- tmp.res$result
-			if(tmp.res$status == 1)
-				warnings <- c(warnings, paste0("Model 9 (Warnings): ", tmp.res$warnings))
-			if(!is.null(tmp.res$messages))
-				messages <- c(messages, paste0("Model 9 (Messages): ", tmp.res$messages))
+#			if(tmp.res$status == 1)
+#				warnings <- c(warnings, paste0("Model 9 (Warnings): ", tmp.res$warnings))
+#			if(!is.null(tmp.res$messages))
+#				messages <- c(messages, paste0("Model 9 (Messages): ", tmp.res$messages))
 			
 			tmp.msg <- " ... finished."
 		}
 		else
 		{
-			errors 	<- c(errors, paste0("Model 9 (Errors): ", tmp.res$errors))
+			errors 	<- c(errors, paste0("Model 9 (Errors transformed space): ", tmp.res$errors))
 			tmp.msg	<- " ... could not be fitted due to errors."
 		}
 		
 		if(!is.null(res.gnm9))
 		{			
-			coeffs 	<- bt.coef(res.gnm9, model=9)#
-			
+			coeffs 			<- bt.coef(res.gnm9, model=9)#
+			tmp.aic			<- res.gnm9$aic
 			my.form9simple 	<- VC~-1+powfun9simple(Mean)
 			tmp.res 		<- conditionHandler(gnm(formula = my.form9simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
 							start=coeffs, trace=TRUE, iterMax=0), file="./stdout.log")
@@ -1252,10 +1292,12 @@ fit.vfp <- function(Data, model.no = 7, K=2, startvals=NULL, quiet=T,
 			else
 			{
 				res.gnm9	<- NULL
-				errors 		<- c(errors, paste0("Model 9 (Errors): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
-				tmp.msg		<- " ... could not be fitted due to errors."
+				errors 		<- c(errors, paste0("Model 9 (Errors original space): ", tmp.res$errors, "\nError occurred in call to 'gnm' with final parameter-estimates."))
+				tmp.msg		<- paste(" ... parameters found: ", paste(paste(c("beta_1", "J"), Signif(coeffs, 6), sep="="), collapse=", "), paste(" (AIC=", Signif(tmp.aic, 6), ")", sep=""), ", but final fit with 'gnm' failed!", sep="")
 			}	
 		}
+		messages <- c(messages, paste0("Model 9 (Messages): ", tmp.res$messages))
+		warnings <- c(warnings, paste0("Model 9 (Warnings): ", tmp.res$warnings))
 		
 		startvals <- NULL
 		cat(tmp.msg)
@@ -2052,7 +2094,10 @@ Signif <- function(x, digits=4, force=TRUE, ...)
 
 summary.VFP <- function(object, model.no=NULL, digits=4, type=c("simple", "complex"), ...)
 {
-	
+	if(length(object$Models) == 0) {
+		warning("There is not valid VFP-model that can be summarized!")
+		return(NA)
+	}	
 	AIC 	<- object$AIC
 	num 	<- which(AIC== min(AIC))[1]			# index
 	AIC 	<- NULL
@@ -2159,6 +2204,12 @@ summary.VFP <- function(object, model.no=NULL, digits=4, type=c("simple", "compl
 
 print.VFP <- function(x, model.no=NULL, digits=4, ...)
 {
+	
+	if(length(x$AIC) == 0) {
+		warning("There is no fitted VFP-model to print!")
+		return(NA)
+	}
+	
 	if(is.null(model.no))				# automatically determine best fitting model
 	{
 		AIC 		<- x$AIC
@@ -2216,7 +2267,11 @@ print.VFP <- function(x, model.no=NULL, digits=4, ...)
 
 coef.VFP <- function(object, model.no=NULL, ...)
 {
-	
+	if(length(object$AIC) == 0) {
+		warning("There is no fitted VFP-model to extract coefficients from!")
+		return(NA)
+	}
+		
 	if(is.null(model.no))				# automatically determine best fitting model
 	{
 		AIC <- object$AIC

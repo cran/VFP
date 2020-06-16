@@ -48,9 +48,9 @@ importFrom("utils", "tail")
 importFrom("VCA", "stepwiseVCA")
 
 ### exported classes
-
-exportClasses( 	"VFP"
-		)
+#
+#exportClasses( 	"VFP"
+#		)
 
 S3method(print, VFP)
 S3method(summary, VFP)

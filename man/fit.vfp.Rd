@@ -4,9 +4,20 @@
 \alias{fit.vfp}
 \title{Estimate (Im)Precision-Profiles Modeling the Relationship 'Var ~ Mean'.}
 \usage{
-fit.vfp(Data, model.no = 7, K = 2, startvals = NULL, quiet = T,
-  col.mean = "Mean", col.var = "VC", col.df = "DF", col.sd = NULL,
-  col.cv = NULL, minVC = NA, ...)
+fit.vfp(
+  Data,
+  model.no = 7,
+  K = 2,
+  startvals = NULL,
+  quiet = T,
+  col.mean = "Mean",
+  col.var = "VC",
+  col.df = "DF",
+  col.sd = NULL,
+  col.cv = NULL,
+  minVC = NA,
+  ...
+)
 }
 \arguments{
 \item{Data}{(data.frame, matrix) containing mean-values, estimated variances and degrees of freedom for each sample}
@@ -119,7 +130,7 @@ plot(res, type="cv", ci.type="lines", ci.col="red",
 		Grid=list(col="wheat"), Points=list(pch=2, lwd=2, col="black"))
 
 # now derive concentation at which a specific reproducibility-
-# imprecision of 10\\\% is reached and add this to the plot
+# imprecision of 10\\% is reached and add this to the plot
 pred <- plot(res, type="cv", ci.type="band", 
 				ci.col=as.rgb("red", .25), Grid=list(col="orange"), 
 				Points=list(pch=2, lwd=2, col="black"),

@@ -4,14 +4,33 @@
 \alias{plot.VFP}
 \title{Plot VFP-Ojbects.}
 \usage{
-\method{plot}{VFP}(x, model.no = NULL, type = c("vc", "sd", "cv"),
-  add = FALSE, alpha = 0.05, ci.col = "gray90", ci.type = c("band",
-  "lines", "none"), dispersion = NULL, browse = FALSE, BG = "white",
-  Title = list(), Xlabel = list(), Ylabel = list(), Line = list(),
-  Points = list(), Grid = list(), Crit = list(), ylim = NULL,
-  Prediction = NULL, Pred.CI = NULL, Model = TRUE,
-  CI.method = c("chisq", "t", "normal"), use.log = FALSE, Npred = 200,
-  ...)
+\method{plot}{VFP}(
+  x,
+  model.no = NULL,
+  type = c("vc", "sd", "cv"),
+  add = FALSE,
+  alpha = 0.05,
+  ci.col = "gray90",
+  ci.type = c("band", "lines", "none"),
+  dispersion = NULL,
+  browse = FALSE,
+  BG = "white",
+  Title = list(),
+  Xlabel = list(),
+  Ylabel = list(),
+  Line = list(),
+  Points = list(),
+  Grid = list(),
+  Crit = list(),
+  ylim = NULL,
+  Prediction = NULL,
+  Pred.CI = NULL,
+  Model = TRUE,
+  CI.method = c("chisq", "t", "normal"),
+  use.log = FALSE,
+  Npred = 200,
+  ...
+)
 }
 \arguments{
 \item{x}{(VFP) object as returned by function 'fit.vfp'}

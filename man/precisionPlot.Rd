@@ -4,11 +4,27 @@
 \alias{precisionPlot}
 \title{Precision Performance Plot of Qualitative Tests.}
 \usage{
-precisionPlot(vfp, model.no = NULL, cutoff, prob = c(0.05, 0.5, 0.95),
-  col = c("blue", "black", "red"), Cutoff = list(), Title = list(),
-  Xlabel = list(), Ylabel = list(), HRLine = list(), Legend = FALSE,
-  nclass = -1, BG = "gray90", digits = 3, alpha = 0.15, alpha2 = 0,
-  xlim = NULL, col.grid = "white", Nrand = 1e+06)
+precisionPlot(
+  vfp,
+  model.no = NULL,
+  cutoff,
+  prob = c(0.05, 0.5, 0.95),
+  col = c("blue", "black", "red"),
+  Cutoff = list(),
+  Title = list(),
+  Xlabel = list(),
+  Ylabel = list(),
+  HRLine = list(),
+  Legend = FALSE,
+  nclass = -1,
+  BG = "gray90",
+  digits = 3,
+  alpha = 0.15,
+  alpha2 = 0,
+  xlim = NULL,
+  col.grid = "white",
+  Nrand = 1e+06
+)
 }
 \arguments{
 \item{vfp}{(VFP) object modeling imprecision over the measuring range}

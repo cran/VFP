@@ -4,9 +4,17 @@
 \alias{predict.VFP}
 \title{Predict Method for Objects of Class 'VFP'.}
 \usage{
-\method{predict}{VFP}(object, model.no = NULL, newdata = NULL,
-  alpha = 0.05, dispersion = NULL, type = c("vc", "sd", "cv"),
-  CI.method = c("chisq", "t", "normal"), use.log = FALSE, ...)
+\method{predict}{VFP}(
+  object,
+  model.no = NULL,
+  newdata = NULL,
+  alpha = 0.05,
+  dispersion = NULL,
+  type = c("vc", "sd", "cv"),
+  CI.method = c("chisq", "t", "normal"),
+  use.log = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{(object) of class "VFP"}

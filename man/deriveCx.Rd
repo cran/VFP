@@ -4,8 +4,15 @@
 \alias{deriveCx}
 \title{Determine C5 and C95 or any Concentration Cx.}
 \usage{
-deriveCx(vfp, model.no = NULL, start = NULL, cutoff = NULL, Cx = 0.05,
-  tol = 1e-06, plot = FALSE)
+deriveCx(
+  vfp,
+  model.no = NULL,
+  start = NULL,
+  cutoff = NULL,
+  Cx = 0.05,
+  tol = 1e-06,
+  plot = FALSE
+)
 }
 \arguments{
 \item{vfp}{(VFP) object representing a precision profile to be used}
