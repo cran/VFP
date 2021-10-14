@@ -1,7 +1,7 @@
-8017b3b0ac16eb16ec47b23a7a96eb54 *DESCRIPTION
+aeae415683582ea55c828af526b6e88d *DESCRIPTION
 5b0c9e34e91e0e2c60c8396ef2bee071 *NAMESPACE
 0e37644d3d44c32add17e50c0b29e812 *R/vfp.R
-dc73af13209c1ecf4e99bfec683cff62 *build/vignette.rds
+2f3e26901605d180e884c6d9cb29f039 *build/vignette.rds
 10f24d639206563b67dbe8e56884473a *data/B2mIntra_98.RData
 f8dc7661259aef1f0f4fcf1a18793937 *data/Glucose.RData
 bbae3f5968aeb5f9ad26076bac8f7539 *data/MultiLotReproResults.RData
@@ -14,8 +14,8 @@ ba25cc0db847e0a4617b936f0542b1a9 *inst/UnitTests/RunAllTests.R
 165d14a1c95f169fb4fca19815e9580c *inst/UnitTests/runit.tests.R
 020cf209dc03969ef66d995ecbead685 *inst/doc/How_to_work_with_package_VFP.pdf
 da15d5ee89b448a1e9ac324fac0ad466 *inst/doc/VFP_package_vignette.R
-11b33d6a93b65f83ed5f4ca4e3be4a07 *inst/doc/VFP_package_vignette.html
-460a7c64d0f431fdd13cbaab73af5f30 *inst/doc/VFP_package_vignette.rmd
+4bde2204d4bff35ce84a277bed06bb1e *inst/doc/VFP_package_vignette.html
+852f4099ea7b9589b5fd3c308e31f9aa *inst/doc/VFP_package_vignette.rmd
 a03a53553973b370468d57793ff2b011 *man/B2mIntra_98.Rd
 4c986ccb9bb5f93c49510f99ed63d0e3 *man/Glucose.Rd
 dfab574cb419b66a69de8b95d4025ee8 *man/MulitLotReproResults.Rd
@@ -23,7 +23,7 @@ dfab574cb419b66a69de8b95d4025ee8 *man/MulitLotReproResults.Rd
 ba4534c5e0e058eaefae3f6cafc55d7f *man/ReproData.Rd
 918999cc27eae1286fd392b1cbab7f46 *man/Signif.Rd
 3c57428a9afbf63e27309d3cfcdd843f *man/T4S9_99.Rd
-6d23e8d1c5be2315e0d2a9c09c13e1b7 *man/VFP-Package.Rd
+e930d9bfd6623099c295d9ddb5692cad *man/VFP-Package.Rd
 7c87e47bb5187baf3a73375ec89a2c80 *man/addGrid.Rd
 f548daafcb8a2330d2f489cde4bad9c8 *man/as.rgb.Rd
 16bb22b592fbf9f2bdf438b1322f78e7 *man/bt.coef.Rd
@@ -56,7 +56,7 @@ ee28ce7931cb5e89753d6dba69577a35 *man/predictMean.Rd
 b79c79bea90fd701db4fd13a7c6468d3 *man/print.VFP.Rd
 ba12374c7ce1137e6b652e4033127ec5 *man/summary.VFP.Rd
 59bad49f2008eacad474a04d360208f5 *man/t.coef.Rd
-460a7c64d0f431fdd13cbaab73af5f30 *vignettes/VFP_package_vignette.rmd
+852f4099ea7b9589b5fd3c308e31f9aa *vignettes/VFP_package_vignette.rmd
 9cf7bb019d3a89518e716175397a6bf9 *vignettes/figures/CLSI_EP05_Example_1-1.pdf
 57cbfa55f35251fe4ee1406bc54e3e07 *vignettes/figures/CLSI_EP05_Example_1-1.png
 e5714fa0a8a9dd2e67cca8af79715abe *vignettes/figures/CLSI_EP05_Example_2-1.pdf
@@ -70,11 +70,11 @@ d865edef9a5a87d48ed7070ad966fafb *vignettes/figures/beautified_with_prediction_1
 66a6abcdfd1dc39622cce7cc4273d5f5 *vignettes/figures/beautified_with_prediction_3-1.pdf
 f510dd6a2db73acca68c4c998aa2f74d *vignettes/figures/beautified_with_prediction_3-1.png
 02a6caf4deb0949ca7b6b74635b91dbe *vignettes/figures/deriveCx_examples_2-1.pdf
-f07e236906ccc7c70d8299c528a5a081 *vignettes/figures/deriveCx_examples_2-1.png
+bbc2a7e39e1a6fa046ba4b14cb8bd05b *vignettes/figures/deriveCx_examples_2-1.png
 4a27b75149ee41467c5d1ab31876ad7d *vignettes/figures/deriveCx_examples_3-1.pdf
-3633244165f91a666d91451218cca7fa *vignettes/figures/deriveCx_examples_3-1.png
+1652586b69ad9b5ad3fa49066ebde0fd *vignettes/figures/deriveCx_examples_3-1.png
 dba3a40c97b39a74ea41cf7717eab0c2 *vignettes/figures/deriveCx_examples_4-1.pdf
-852b2ee512bcd07e3545c3045f30d367 *vignettes/figures/deriveCx_examples_4-1.png
+da36f5ee9b5f12ba5dd008128c6767e9 *vignettes/figures/deriveCx_examples_4-1.png
 b224a7e96919d09da821e1c65ba332e9 *vignettes/figures/plot_VFP_model_CV-1.pdf
 c32f4dba4759452f3e1c19911b3150ee *vignettes/figures/plot_VFP_model_CV-1.png
 0e8b8c5d5d0b0b2bb03cb6e032d93ae6 *vignettes/figures/plot_VFP_model_VC-1.pdf

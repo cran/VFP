@@ -84,27 +84,27 @@ Any precision profile is based on the outcome of a precision experiment. The req
 of the models provided is *Mean*, *Variance* and the *Degrees of Freedom* for multiple samples used in the 
 precision experiment. Let's start with performing the analysis of such a precision experiment.
 
- ```{r perform_VCA_1, echo=TRUE}
+```{r perform_VCA_1, echo=TRUE}
 library(VFP)
 library(VCA)
 # CLSI EP05-A3 example data
 data(CA19_9)
-```  
+```
 
 Now perform the variance component analysis (VCA) for each sample using batch-processing. Here, we the *anovaVCA*
 function from R-package *VCA* is used.
 
- ```{r perform_VCA_2, echo=TRUE}
+```{r perform_VCA_2, echo=TRUE}
 VCA.CA19_9 <- anovaVCA(result~site/day, CA19_9, by="sample")
-``` 
+```
 
 The result will be a list of *VCA*-objects.
 
- ```{r perform_VCA_3, echo=TRUE}
+```{r perform_VCA_3, echo=TRUE}
 class(VCA.CA19_9)
 sapply(VCA.CA19_9, class)
 print(VCA.CA19_9[[1]], digits=4)
-```  
+```
 
 Each *VCA*-object stores the information for one sample and there are multiple types of variability which
 can be used to construct a precision profile. Total variability corresponds to *reproducibility* in this example.
@@ -118,7 +118,7 @@ total variability will be used by default.
 ```{r extract_Info_1, echo=TRUE}
 mat.total <- getMat.VCA(VCA.CA19_9)
 print(mat.total)
-```  
+```
 
 **Note**:  
 This input does not need to be derived from a variance component analysis performed with R-package **VCA**.
@@ -129,7 +129,7 @@ To extract *repeatability* one can either specify "error" or the index of this v
 ```{r extract_Info_2, echo=TRUE}
 mat.rep <- getMat.VCA(VCA.CA19_9, "error")
 print(mat.rep)
-``` 
+```
 
 In this example *Intermediate Precision* consists of two variance components, *repeatability* and *day-to-day*. 
 To select these specify the sequence of indexes. Note, that this will only be possible for models that were fitted
@@ -138,7 +138,7 @@ using *ANOVA*-estimation, thus, any model fitted using *REML* will result in an 
 ```{r extract_Info_3, echo=TRUE}
 mat.ip <- getMat.VCA(VCA.CA19_9, 3:4)
 print(mat.ip)
-```  
+```
 
 The next step towards a precision profile consists of fitting a VFP-model. This can be done for a single model or
 in batch-mode. The latter means instead of fitting one model after another, one can select a set of models.
@@ -173,13 +173,13 @@ Below model 1 is fitted to the total variability data.
 
 ```{r fit_VFP_model_1, echo=TRUE}
  tot.m1 <- fit.vfp(mat.total, model.no=1)
-``` 
+```
   
 The standard *print*-method for *VCA*-objects is identical to the *summary*-method yielding:
   
 ```{r fit_VFP_model_2, echo=TRUE}
 tot.m1
-``` 
+```
 
 Now, all ten available models are fitted to the total variability data in batch mode. Note, model 5 
 is skipped since it is identical to model 3 without changing the default setting *K=2* to something different.
@@ -188,7 +188,7 @@ is skipped since it is identical to model 3 without changing the default setting
  tot.all <- fit.vfp(mat.total, 1:10)
  # 'summary' presents more details for multi-model objects 
  summary(tot.all)
- ```
+```
    
   
   
@@ -199,10 +199,10 @@ similar in their AIC one can use the less complex model. The fitted model(s) is/
 Calling the plot-method for these objects will always generate a precision profile on variance scale (VC),
 which is the scale model fitting takes place on.
 
- ```{r plot_VFP_model_VC, echo=TRUE}
+```{r plot_VFP_model_VC, echo=TRUE}
 # not selecting a specific model automatically chooses the one with lowest AIC
 plot(tot.all)
-``` 
+```
   
 One can plot the precision profile on variance (type="vc", default), SD (type="sd") or CV (type="cv")
 scale.
@@ -210,7 +210,7 @@ scale.
 ```{r plot_VFP_model_CV, echo=TRUE}
 # selecting one specific model is easy
 plot(tot.all, model.no=7, type="cv", ylim=c(0, 10))
-``` 
+```
   
 There are plenty of options to customize the visual appearance of a precision profile. One can add multiple
 precision profiles to one plot as done in the CLSI EP05-A3 guideline from which this example is borrowed.
@@ -248,7 +248,7 @@ plot(mod8.rep, type="cv", add=TRUE, ci.type="none",
 legend.rm( x="center", pch=15:17, col=c("blue", "deepskyblue", "darkorchid3"),
 		cex=1, legend=c("Reproducibility", "Within-Lab", "Repeatability"),
 		box.lty=0)
-``` 
+```
 		
 We now conclude with an example showing many of the different features of the standard
 *plot*-method for *VFP*-objects.
@@ -260,7 +260,7 @@ plot(mod8.rep, BG="darkgray",
 		Xlabel=list(cex=1.5, text="CA19-9 [U/mL]", col="blue"),
 		Ylabel=list(cex=1.5, text="Repeatability on Variance-Scale", col="blue"),
 		Crit=NULL)		
-```  
+```
   
   
                                                           
@@ -290,13 +290,13 @@ To add confidence intervals, one can set argument *Pred.CI=TRUE*.
 
 ```{r beautified_with_prediction_2, echo=TRUE}
 plot(mod8.rep, type="cv", ylim=c(0, 8), xlim=c(0, 100), Prediction=5, Pred.CI=TRUE)
-``` 
+```
 
 Calling function *predict.VFP* within the plotting function can be achieved as shown below.
 
 ```{r beautified_with_prediction_3, echo=TRUE}
 plot(mod8.rep, type="cv", ylim=c(0, 8), xlim=c(0, 100), Prediction=list(x=50), Pred.CI=TRUE)
-``` 
+```
 
 Once a precision profile for an IVD-assay is established one can infer variability at any concentration of interest
 from it. It nicely summarizes the precision performance of an assay in a simple plot providing much higher information
