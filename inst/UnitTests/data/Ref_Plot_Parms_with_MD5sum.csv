@@ -1,0 +1,25 @@
+;model.no;type;alpha;ci.col;ci.type;BG;Title;Xlabel;Ylabel;Line;Points;Grid;Crit;ylim;Prediction;Pred.CI;Model;MD5
+1;1;vc;NA;;;;;;;;;;;;;;NA;2dc430f9333a867dbb3e9fe8f0f1bf25
+2;1;sd;NA;;;;;;;;;;;;list(x=5);;NA;51784ec68a1655e57024caea705914f8
+3;1;cv;NA;;;;;;;;;;;c(0,40);list(y=c(5,10));;NA;406c04723e96f6c6d8927ed55c2fc5ee
+4;2;vc;NA;;;;;;;;;;;;;;NA;c58a9a9aa4036738e8e101a69cb30a84
+5;2;sd;NA;;;;list(text=This is the main title, col=blue, font=2, cex=2);;;;;;;;list(x=5);;NA;94a9361429c0bece9633eae197ca9000
+6;2;cv;NA;;;;NULL;;;;;;;;;;FALSE;b165ea408405d607d7c7881817c416bf
+7;3;vc;NA;blue;;;;;;;list(pch=15, col=darkred, cex=0.8);list(x=seq(0,100,5), y=seq(0,20,1));;;;list();NA;96240974a26d0a6da8be887c7d9a07f1
+8;3;sd;0,1;;none;;;;;list(lty=1, lwd=2, col=darkblue);;;;;list(x=5);;NA;3e4f727b16312a276928f3cee0707862
+9;3;cv;NA;;;lightgray;;;;;;;NULL;;list(y=c(5,10));list(col=lightgreen);NA;aec4aabdfb86c55c1a82cf5a95ae237c
+10;4;vc;NA;darkgreen;;;;list(text=This is the X-label, cex=1.25, font=3);list(text=This is the Y-label, cex=1.25, font=3);;;;;;;;NA;9566f22cce311ecea1fe42ea2e6ffcf2
+11;4;sd;0,05;;;;;;;;;;NULL;;list(x=5);;NA;4c0b5e65e5c819d68cbbd16837a79bfb
+12;4;cv;NA;;none;;;;;list(lty=1, lwd=2, col=darkblue);;;;c(0,30);;;FALSE;359e77afbc5b029bd6304e413a774beb
+13;6;vc;NA;cyan;;lightgray;;;;;;;NULL;;;;NA;59cee31e2f5688f86fb76c5ef7b19e8a
+14;6;sd;NA;;;;;;;;;;;;list(x=5);;NA;3edbc226a6392eac264ceeb78cc45020
+15;6;cv;0,1;;;lightgray;;;;list(lty=1, lwd=2, col=darkblue);;;;c(0,50);list(y=c(5,10));list(col=lightgreen);NA;b4bae874772e94b6194924fac928d5ae
+16;7;vc;NA;;none;;;;;;;;NULL;;;;NA;2ce7a35127f8511ea72105a409118928
+17;7;sd;NA;gray;;;;list(text=This is also the X-label, cex=1.5, font=2);list(text=This is the Y-label, cex=1.25, font=3);;;;;;;;FALSE;d7bc5bda808f17c1fdabf3bdb344aac8
+18;7;cv;0,01;;;;;;;;;;NULL;c(0,40);;;NA;5421dc6e0eae2de739a2fb3fd24fcebd
+19;8;vc;NA;black;;lightgray;;;;list(lty=1, lwd=2, col=darkblue);;;;;;;NA;af8f7734db60fe3756b3b34723618365
+20;8;sd;NA;;none;;;;;list(lty=1, lwd=2, col=darkblue);;;;;;;FALSE;e1e833bc3986b151e95d7013d252faef
+21;8;cv;NA;;;;;list(text=Just another X-label, cex=.85, font=4);list(text=This is the Y-label, cex=1.25, font=3);;;;;c(0,60);;;NA;159b4cc9a7c0181a0bc489d5263d9029
+22;9;vc;NA;green;;lightgray;;;;;;;NULL;;list(y=c(5,10));list(col=lightgreen);NA;d944c9e9db25c7c1ac2eece503e9c4d9
+23;9;sd;0,01;;;;;;;;;;;c(0,35);;;NA;e0e2689dcd17fd793e4276552b011005
+24;9;cv;NA;;none;;;;;list(lty=1, lwd=2, col=darkblue);;;NULL;;list(x=5);;FALSE;4c6c819883319f0417bc35b697915afe

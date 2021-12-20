@@ -1,0 +1,47 @@
+Version 1.4
+-------------
+
+- corrected model 2 formula
+- specifying 'xlim' in function 'plot.VFP' lead to an error when calling it from
+  within another function, this was corrected by adding 'xlim' as function argument
+- in function 'precisionPlot', the label at the mean of the respective normal distribution
+  was not correct in case of more than two specified probabilities, this was corrected
+- degrees of freedom for non-linear models corrected 
+- Function 'fit.vfp' was adapted to cases where a valid set of parameters in the re-parameterized
+  space was found but the final gnm-fit in the original parameter-space did not converge. In these
+  cases the final set of parameters is returned but no variance-covariance matrix is available. 
+  Thus, there will not be any confidence-intervals downstream.
+- Adaption in the calculation of confidence intervals. These are now always calculated on the vc scale
+  and then eventually transformed to the sd or cv scale. 
+
+
+
+Version 1.3
+-----------
+
+- issue was fixed if input data contained variables with default names but user specified
+  different variables, this had no effect because the variables with default names were used
+  for the fitting
+- condition handler was updated indicating an error if no result is returned by
+  package gnm
+- multiple issues were reported for model three which did not return a valid result,
+  start value procedure for this model was improved 
+
+Version 1.2
+-----------
+
+- a package-vignette was integrated 
+- function 'precisionPlot' was added visualizing the relationship between
+  C5 and C95 concentrations, (im)precision and one or two cutoffs
+
+Version 1.1
+-----------
+
+- fixed issue with 'alpha' not having any effect when being set different from the default in function 'plot.VFP'
+- added function 'deriveCx' for derivation of sample-concentration at which a pre-defined proportion of repeated
+  measurements would fall above the cutoff, e.g. C5 or C95
+
+Version 1.0
+-----------
+
+- initial version put on CRAN
