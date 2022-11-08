@@ -1,3 +1,10 @@
+Version 1.4.1
+-------------
+
+- PDF-vignette 'How_to_work_with_package_VFP.pdf' was deleted as CRAN-checks
+  on linux OS generated warnings complaining about file size
+
+
 Version 1.4
 -------------
 

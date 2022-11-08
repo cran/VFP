@@ -1,6 +1,6 @@
 Package: VFP
-Version: 1.4
-Date: 2021-12-08
+Version: 1.4.1
+Date: 2022-11-08
 Title: Variance Function Program
 Author: Andre Schuetzenmeister [cre, aut],
   Florian Dufey [aut],
@@ -12,7 +12,7 @@ Authors@R: c(
 			person(given="Andrea", family="Geistanger", email="andrea.geistanger@roche.com", role = c("ctb"))
 		    )
 Depends: R (>= 3.1.0), gnm
-Imports: VCA, MASS, utils, stats, graphics, grDevices
+Imports: VCA, MASS, utils, stats, graphics, grDevices, methods
 Suggests: RUnit, knitr, rmarkdown, prettydoc
 Description: 
   Variance function estimation for models proposed by W. Sadler in his variance function program 
@@ -23,6 +23,6 @@ Description:
 License: GPL (>= 2)
 VignetteBuilder: knitr, rmarkdown
 NeedsCompilation: no
-Packaged: 2021-12-08 15:53:51 UTC; schueta6
+Packaged: 2022-11-08 14:21:33 UTC; schueta6
 Repository: CRAN
-Date/Publication: 2021-12-20 17:50:02 UTC
+Date/Publication: 2022-11-08 15:10:06 UTC

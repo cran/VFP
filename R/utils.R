@@ -56,7 +56,7 @@ conditionHandler <- function(expr,  file=NULL)
 		result <- try(withCallingHandlers(expr, warning = WHandler, message=MHandler), silent=TRUE)
 	}
 	
-	if(class(result[[1]])[1] == "try-error" || class(result)[1] == "try-error")
+	if(is(result[[1]], "try-error") || is(result, "try-error"))
 	{		
 		Errors <- attr(result, "condition")$message
 		result <- NA

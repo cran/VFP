@@ -525,7 +525,7 @@ predict.VFP <- function(object, model.no=NULL, newdata=NULL, alpha=.05,
 					silent=TRUE)
 	)
 
-	if(class(pred) == "try-error") {
+	if(is(pred, "try-error")) {
 		
 		#	pred <- newdata
 		parms <- object$Models[[num]]$coefficients
@@ -705,7 +705,7 @@ predictMean <- function(obj, type=c("vc", "sd", "cv"), model.no=NULL,
 		CI.type <- "estimate"
 	
 	stopifnot(!is.null(newdata))
-	stopifnot(class(obj) == "VFP")
+	stopifnot(is(obj, "VFP"))
 	type <- match.arg(type[1], choices=c("vc", "sd", "cv"))
 	
 	if(is.null(model.no))				# automatically determine best fitting model

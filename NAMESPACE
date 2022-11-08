@@ -46,6 +46,7 @@ importFrom("MASS", "gamma.dispersion")
 importFrom("utils", "capture.output")
 importFrom("utils", "tail")
 importFrom("VCA", "stepwiseVCA")
+importFrom("methods", "is")
 
 ### exported classes
 #

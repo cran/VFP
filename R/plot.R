@@ -238,7 +238,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 			tmp.args$model.no <- mod
 			par(ask=TRUE)
 			tmp <- try(do.call(plot.VFP, tmp.args), silent=TRUE)
-			if(class(tmp) == "try-error")
+			if(is(tmp, "try-error"))
 				warning(paste0("Model '", mod, "' could not be plotted due to an error!\n\nError:\n\t", attr(tmp, "condition")$message,"\n\n"))
 			mtext( 	side=1, at=par("usr")[1], line=3, font=6,
 					text=paste(switch(i, "1"="", "2"="2nd", "3"="3rd", "4"="4th", 
@@ -672,7 +672,7 @@ precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col
 		xlim=NULL, col.grid="white", Nrand=1e6)
 {
 	
-	stopifnot(class(vfp) == "VFP")
+	stopifnot(is(vfp, "VFP"))
 	stopifnot(is.numeric(cutoff))
 	Nco <- length(cutoff)
 	if(!Nco %in% 1:2)
@@ -921,7 +921,7 @@ precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col
 
 deriveCx <- function(vfp, model.no=NULL, start=NULL, cutoff=NULL, Cx=.05, tol=1e-6, plot=FALSE)
 {
-	stopifnot(class(vfp) == "VFP")
+	stopifnot(is(vfp, "VFP"))
 	stopifnot(is.numeric(cutoff))
 	if(is.null(start))
 		start <- cutoff
