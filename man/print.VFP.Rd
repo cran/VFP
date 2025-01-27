@@ -9,8 +9,9 @@
 \arguments{
 \item{x}{(object) of class 'VFP'}
 
-\item{model.no}{(integer) specifying a fitted model in 'x', if NULL the best fitting
-model will be printed, i.e. the one with min(AIC)}
+\item{model.no}{(integer) specifying a fitted model in 'x', if NULL 
+the best fitting model will be printed, i.e. the one 
+with min(AIC)}
 
 \item{digits}{(integer) number of significant digits}
 
@@ -25,8 +26,8 @@ library(VCA)
 data(CA19_9)
 fits.CA19_9 <- anovaVCA(result~site/day, CA19_9, by="sample")
 # extract repeatability
-mat.CA19_9 <- getMat.VCA(fits.CA19_9, "error")
-res.CA19_9 <- fit.vfp(mat.CA19_9, 1:10)
+mat.CA19_9 <- get_mat(fits.CA19_9, "error")
+res.CA19_9 <- fit_vfp(mat.CA19_9, 1:9)
 res.CA19_9
 }
 }

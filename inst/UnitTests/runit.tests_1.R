@@ -290,7 +290,7 @@ TF016.getMat.VCA_sequences <- function()
 #* **target getMat.VCA
 #* **riskid RA06
 #* **funid  Fun201
-#* **desc Are equences of variance components correctly processed when fitting VFP-models directly on a list of VCA-objects
+#* **desc Are sequences of variance components correctly processed when fitting VFP-models directly on a list of VCA-objects
 TF017.fit.vfp_VC_sequences <- function()
 {
 	data(VCAdata1, package="VCA")
@@ -337,4 +337,101 @@ TF019.coef <- function(x)
 		coef1 	<- as.numeric(coef(fit.all.models, model.no=model))
 		checkEquals(coef1, coef0, tol=1e-12)
 	}
+}
+
+#* **target predict.VFP
+#* **riskid RA02
+#* **funid Fun104
+#* **desc model 6 could not be automatically selected as best model in predict.VCA
+
+TF020.predictModel6 <- function() {
+
+	dat <- data.frame(
+			Mean=c(582.340597362797,490.631303876108,312.954949544278,238.443472329726,120.111024593649),
+			VC=c(60740.9512627291,7971.39850756505,890.117016131418,41.2891014866317,932.23715614741),
+			DF=1
+	)
+	# model 6 has lowest AIC
+	fits <- try(fit.vfp(dat, 1:9))
+	pred <- try(predict(fits, type="vc")$Fitted, silent=TRUE)
+	checkTrue(!is(pred, "try-error"))
+	checkTrue(is(pred, "numeric"))
+}
+
+#* **target predictMean
+#* **riskid RA02
+#* **funid Fun104
+#* **desc model 6 could not be automatically selected as best model in predictMean
+
+TF021.predictMeanModel6 <- function() {
+	
+	dat <- data.frame(
+			Mean=c(582.340597362797,490.631303876108,312.954949544278,238.443472329726,120.111024593649),
+			VC=c(60740.9512627291,7971.39850756505,890.117016131418,41.2891014866317,932.23715614741),
+			DF=1
+	)
+	# model 6 has lowest AIC
+	fits <- try(fit.vfp(dat, 1:9))
+	pred <- try(predictMean(fits, type="cv", newdata=15)$Mean, silent=TRUE)
+	checkTrue(!is(pred, "try-error"))
+	checkTrue(is(pred, "numeric"))
+}
+
+
+#* **target plot.VFP
+#* **riskid RA02
+#* **funid Fun102
+#* **desc model 6 could not be automatically selected as best model in predictMean
+
+TF022.plotModel6 <- function() {
+	
+	dat <- data.frame(
+			Mean=c(582.340597362797,490.631303876108,312.954949544278,238.443472329726,120.111024593649),
+			VC=c(60740.9512627291,7971.39850756505,890.117016131418,41.2891014866317,932.23715614741),
+			DF=1
+	)
+	# model 6 has lowest AIC
+	fits <- try(fit.vfp(dat, 1:9))
+	ret  <- try(plot(fits))
+	checkTrue(!is(ret, "try-error"))
+}
+
+#* **target getMat.VCA
+#* **riskid RA06
+#* **funid  Fun201
+#* **desc Does getMat.VCA correcly process a list of VFP-objects fitted by remlVCA
+TF023.getMat.VCA.REML <- function()
+{
+	data(VCAdata1, package="VCA")
+	lst 	<- remlVCA(y~(lot+device)/day/run, VCAdata1, by="sample")
+	mat1 	<- getMat.VCA(lst)
+	VCs		<- sapply(lst, function(x) x$aov.tab["total", "VC"])
+	Means	<- sapply(lst, function(x) x$Mean)
+	DFs		<- sapply(lst, function(x) x$aov.tab["total", "DF"])
+	mat1	<- mat1[names(VCs),]
+	checkEquals(as.numeric(VCs),   mat1[,"VC"])
+	checkEquals(as.numeric(Means), mat1[,"Mean"])
+	checkEquals(as.numeric(DFs),   mat1[,"DF"])
+}
+
+#* **target getMat.VCA
+#* **riskid RA06
+#* **funid  Fun201
+#* **desc Does getMat.VCA correcly process a list of VFP-objects fitted by remlVCA for intermediate sums of variance components
+TF024.getMat.VCA.REML_sequences <- function()
+{
+	data(VCAdata1, package="VCA")
+	lst 	<- remlVCA(y~(lot+device)/day/run, VCAdata1, by="sample")
+	mat1 	<- getMat.VCA(lst, vc=4:6)
+	lst0 	<- lapply(lst, getIP.remlVCA, vc="lot:device:day")
+	mat0	<- t(sapply(lst0, function(x) return(c(Mean=x$Mean, DF=x$aov.tab["total", c("DF", "VC", "SD", "CV[%]")]))))
+	mat2	<- matrix(unlist(mat0), ncol=ncol(mat0))
+	rownames(mat2) <- rownames(mat0)
+	colnames(mat2) <- colnames(mat0)
+	mat0 	<- mat2
+	colnames(mat0) <- c("Mean", "DF", "VC", "SD", "CV")
+	mat1	<- mat1[rownames(mat0),]
+	checkEquals(as.numeric(mat0[,"VC"]),   mat1[,"VC"])
+	checkEquals(as.numeric(mat0[,"Mean"]), mat1[,"Mean"])
+	checkEquals(as.numeric(mat0[,"DF"]),   mat1[,"DF"])
 }

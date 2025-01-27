@@ -5,8 +5,23 @@
 
 
 
-library(VFP)
+#library(VFP)
 library(RUnit)
+
+##############################################################################
+# upon loading package VFP legacy function names will be connected
+# to ensure that this happens, also when sourcing the R-code, body of
+# of .onLoad function will be executed here:
+
+fit.vfp           <<- fit_vfp
+predictMean       <<- predict_mean
+deriveCx          <<- derive_cx
+precisionPlot     <<- precision_plot
+addGrid           <<- VFP:::add_grid
+getMat.VCA        <<- get_mat
+Signif            <<- VFP:::signif2
+legend.rm         <<- VFP:::legend_rm
+
 
 options(warn=1)
 

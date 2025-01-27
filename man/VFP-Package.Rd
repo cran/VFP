@@ -20,8 +20,8 @@
   \tabular{ll}{
     Package: \tab VFP\cr
     Type: \tab Package \cr
-    Version: \tab 1.4.1 \cr
-    Date: \tab 2022-11-08\cr
+    Version: \tab 1.4.3 \cr
+    Date: \tab 2025-01-27\cr
     License:  \tab GPL (>=3) \cr
     LazyLoad: \tab yes \cr
   }
@@ -33,12 +33,13 @@
 }
 \references{
 CLSI EP05-A3: Evaluation of Precision of Quantitative Measurement Procedures; Approved Guideline - Third Edition. (2014)
+
 Sadler WA, Smith MH. Use and Abuse of Imprecision Profiles: Some Pitfalls Illustarted by Computing and Plotting Confidence Intervals. Clin Chem 1990; 36/7:1346-1350
 	
 Sadler WA, Smith MH. A reliable method of estimating the variance function in immunoassays. Comput Stat Data Anal 1986; 3:227-239
 	
 Sadler WA, Smith MH. Estimation of imprecision in immunoassays quality assessment programmes. Ann Clin Biochem 1987; 24:98-102
 	
-Sadler WA, \href{http://www.aacb.asn.au/professionaldevelopment/useful-tools/variance-function-program-version-110}{http://www.aacb.asn.au/professionaldevelopment/useful-tools/variance-function-program-version-110}. Accessed November 16, 2015
+www.aacb.asn.au/AACB/Resources/Variance-Function-Program
 }
 \keyword{package}

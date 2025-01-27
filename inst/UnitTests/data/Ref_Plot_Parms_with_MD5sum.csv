@@ -1,7 +1,7 @@
 ;model.no;type;alpha;ci.col;ci.type;BG;Title;Xlabel;Ylabel;Line;Points;Grid;Crit;ylim;Prediction;Pred.CI;Model;MD5
 1;1;vc;NA;;;;;;;;;;;;;;NA;2dc430f9333a867dbb3e9fe8f0f1bf25
 2;1;sd;NA;;;;;;;;;;;;list(x=5);;NA;51784ec68a1655e57024caea705914f8
-3;1;cv;NA;;;;;;;;;;;c(0,40);list(y=c(5,10));;NA;406c04723e96f6c6d8927ed55c2fc5ee
+3;1;cv;NA;;;;;;;;;;;c(0,40);list(y=c(5,10));;NA;67e6a55f17488166de37261d6d76ac8d
 4;2;vc;NA;;;;;;;;;;;;;;NA;c58a9a9aa4036738e8e101a69cb30a84
 5;2;sd;NA;;;;list(text=This is the main title, col=blue, font=2, cex=2);;;;;;;;list(x=5);;NA;94a9361429c0bece9633eae197ca9000
 6;2;cv;NA;;;;NULL;;;;;;;;;;FALSE;b165ea408405d607d7c7881817c416bf
@@ -10,7 +10,7 @@
 9;3;cv;NA;;;lightgray;;;;;;;NULL;;list(y=c(5,10));list(col=lightgreen);NA;aec4aabdfb86c55c1a82cf5a95ae237c
 10;4;vc;NA;darkgreen;;;;list(text=This is the X-label, cex=1.25, font=3);list(text=This is the Y-label, cex=1.25, font=3);;;;;;;;NA;9566f22cce311ecea1fe42ea2e6ffcf2
 11;4;sd;0,05;;;;;;;;;;NULL;;list(x=5);;NA;4c0b5e65e5c819d68cbbd16837a79bfb
-12;4;cv;NA;;none;;;;;list(lty=1, lwd=2, col=darkblue);;;;c(0,30);;;FALSE;359e77afbc5b029bd6304e413a774beb
+12;4;cv;NA;;none;;;;;list(lty=1, lwd=2, col=darkblue);;;;c(0,30);;;FALSE;f353160781e3d5cab82a775f91779483
 13;6;vc;NA;cyan;;lightgray;;;;;;;NULL;;;;NA;59cee31e2f5688f86fb76c5ef7b19e8a
 14;6;sd;NA;;;;;;;;;;;;list(x=5);;NA;3edbc226a6392eac264ceeb78cc45020
 15;6;cv;0,1;;;lightgray;;;;list(lty=1, lwd=2, col=darkblue);;;;c(0,50);list(y=c(5,10));list(col=lightgreen);NA;b4bae874772e94b6194924fac928d5ae

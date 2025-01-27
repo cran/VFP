@@ -9,8 +9,7 @@
 \usage{data(B2mIntra_98)}
 \format{data.frame with 554 observations and 2 variables.}
 \references{
-       VFP Program Version 12.0\\
-       \href{http://www.aacb.asn.au/professionaldevelopment/useful-tools}{http://www.aacb.asn.au/professionaldevelopment/useful-tools}
+       www.aacb.asn.au/AACB/Resources/Variance-Function-Program
 }
 \keyword{datasets}
 

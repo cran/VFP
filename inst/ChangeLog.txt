@@ -1,3 +1,19 @@
+Version 1.4.3
+-------------
+- code was refactored to comply with tidyverse style guide (not 100 percent)
+- any function names including '.' were renamed; to be backward compatible
+  old function names were made available in .onLoad in .GlobalEnv
+
+
+Version 1.4.2
+-------------
+- fixing bug that model 6 as the best fitting model cannot be automatically selected
+  issuing an error
+- default-setting for 'model.no' changed to 1:9 not taking model 10 into account as it
+  does not fit into the class of generalized non-linear models and should not be compared
+  to other models 1-9, it is still available
+
+
 Version 1.4.1
 -------------
 

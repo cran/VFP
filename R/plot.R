@@ -13,7 +13,7 @@
 #' The corresponding 100x(1-alpha)\% confidencen interval around the variance-function
 #' can be plotted either as lines ('ci.type="lines') or as per default as CI-band.
 #' 
-#' @param x				(VFP) object as returned by function 'fit.vfp'
+#' @param x				(VFP) object as returned by function 'fit_vfp'
 #' @param model.no		(integer) specifying which model to plot, must be one of the fitted models
 #' @param type			(character) either "vc" to generate a plot on the original
 #' 						variance-scale or "cv" to plot it on the coefficient of variation
@@ -42,7 +42,7 @@
 #' 						data used to fit a variance function shall be plotted
 #' @param Line			(list) passed to function \code{\link{lines}} controlling the visual appearance
 #' 						of the line representing the fitted variance-function 
-#' @param Grid			(list) passed to function \code{\link{addGrid}} controlling the appearance
+#' @param Grid			(list) passed to function \code{\link{add_grid}} controlling the appearance
 #' 						of a grid, set to NULL to omit
 #' @param Crit			(list) passed to function \code{\link{legend}} per default used to present
 #' 						the optimality criterion for choosing the best fitting model, per default this
@@ -80,25 +80,25 @@
 #' 
 #' @author Andre Schuetzemeister \email{andre.schuetzeneister@@roche.com}
 #' 
-#' @seealso \code{\link{fit.vfp}}, \code{\link{predict.VFP}}, \code{\link{predictMean}}
+#' @seealso \code{\link{fit_vfp}}, \code{\link{predict.VFP}}, \code{\link{predict_mean}}
 #' 
 #' @examples 
 #' \donttest{
 #' library(VCA)
 #' data(VCAdata1)
 #' lst <- anovaVCA(y~(device+lot)/day/run, VCAdata1, by="sample")
-#' mat <- getMat.VCA(lst)		# automatically selects "total"
+#' mat <- get_mat(lst)		# automatically selects "total"
 #' mat
 #' 
-#' res <- fit.vfp(model.no=1:10, Data=mat)
+#' res <- fit_vfp(model.no=1:9, Data=mat)
 #' plot(res)
 #' plot(res, type="cv")
 #' plot(res, type="cv", ci.type="lines", ci.col="red",
 #' 		Grid=list(col="wheat"), Points=list(pch=2, lwd=2, col="black"))
 #' 
 #' # same for repeatability
-#' mat.err <- getMat.VCA(lst, "error")
-#' res.err <- fit.vfp(1:10, Data=mat.err)
+#' mat.err <- get_mat(lst, "error")
+#' res.err <- fit_vfp(1:9, Data=mat.err)
 #' plot(res.err)
 #' 
 #' # add predictions to plot, e.g. functional sensitivity
@@ -127,19 +127,19 @@
 #' fits.CA19_9[[1]]
 #' 
 #' # extract repeatability
-#' rep.CA19_9 <- getMat.VCA(fits.CA19_9, "error")
+#' rep.CA19_9 <- get_mat(fits.CA19_9, "error")
 #' 
 #' # extract reproducibility
-#' repro.CA19_9 <- getMat.VCA(fits.CA19_9, "total")
+#' repro.CA19_9 <- get_mat(fits.CA19_9, "total")
 #' 
 #' # extract intermediate-precision (within-lab)
-#' ip.CA19_9 <- getMat.VCA(fits.ip.CA19_9, "total")
+#' ip.CA19_9 <- get_mat(fits.ip.CA19_9, "total")
 #' 
 #' # fit model (a+bX)^C (model 8) to all three matrices
 #' 
-#' mod8.repro 	<- fit.vfp(repro.CA19_9, 8)
-#' mod8.ip		<- fit.vfp(ip.CA19_9, 8)
-#' mod8.rep		<- fit.vfp(rep.CA19_9, 8)
+#' mod8.repro 	<- fit_vfp(repro.CA19_9, 8)
+#' mod8.ip		<- fit_vfp(ip.CA19_9, 8)
+#' mod8.rep		<- fit_vfp(rep.CA19_9, 8)
 #' 
 #' # plot reproducibility precision profile first
 #' # leave enough space in right margin for a legend
@@ -164,7 +164,7 @@
 #' 		Line=list(col="darkorchid3", lwd=3), log="x")
 #' 
 #' # add legend to right margin
-#' legend.rm( x="center", pch=15:17, col=c("blue", "deepskyblue", "darkorchid3"),
+#' legend_rm( x="center", pch=15:17, col=c("blue", "deepskyblue", "darkorchid3"),
 #' 		cex=1.5, legend=c("Reproducibility", "Within-Lab Precision", "Repeatability"),
 #' 		box.lty=0)
 #' 
@@ -245,9 +245,9 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 									"5"="5th", "6"="6th", "7"="7th", "8"="8th", "9"="9th", "10"="10th"),
 							"best-fitting model"))
 			cat(paste0(	"(",i,") ",names(aic)[i], ifelse(names(aic)[i] == "Model_10", "\t", "\t\t"),	
-							format(paste0("AIC: ", Signif(aic[i])), width=15),
-							format(paste0("Deviance: ", Signif(dev[i])), width=20),
-							format(paste0("RSS: ", Signif(rss[i])), width=15),
+							format(paste0("AIC: ", signif2(aic[i])), width=15),
+							format(paste0("Deviance: ", signif2(dev[i])), width=20),
+							format(paste0("RSS: ", signif2(rss[i])), width=15),
 							"\t\t"))
 		}
 		cat("\n\n")
@@ -423,7 +423,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 	}
 	
 	if(!is.null(Grid) && !add)
-		do.call("addGrid", Grid)
+		do.call("add_grid", Grid)
 	
 	predMean <- NULL
 	
@@ -445,7 +445,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 			
 			if(is.numeric(Prediction$y))
 			{
-				predMean <- predictMean(x, model.no=model.no, newdata=Prediction$y, type=type)
+				predMean <- predict_mean(x, model.no=model.no, newdata=Prediction$y, type=type)
 				predMean <- predMean[,c("Mean", Type, "LCL", "UCL")]
 				predMean$Type <- 1
 			}
@@ -463,7 +463,7 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 			# confidence interval for predictions
 			if(!is.null(Pred.CI))
 			{
-				Pred.CI.def 	<- list(col=as.rgb("blue", .15), border=NA)
+				Pred.CI.def 	<- list(col=as_rgb("blue", .15), border=NA)
 				Pred.CI.def[names(Pred.CI)] <- Pred.CI
 				Pred.CI			<- Pred.CI.def
 			}
@@ -529,8 +529,8 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 					text=parse(text=obj$Formulas[num]))
 		}
 		# use 4 significant digits or for large values (> 4 digits) integer-representation
-		tmpAIC <- Signif(x$AIC[num])
-		tmpRSS <- Signif(x$RSS[num])
+		tmpAIC <- signif2(x$AIC[num])
+		tmpRSS <- signif2(x$RSS[num])
 		
 		if(!is.null(Crit))
 		{
@@ -636,6 +636,8 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 #' @param Nrand			(integer) specifying the number of data points simulated to represent a normal
 #' 						distribution
 #' 
+#' @aliases precisionPlot
+#' 
 #' @examples 
 #' \dontrun{
 #' # perform variance component analysis
@@ -644,29 +646,29 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 #' # perform VCA-anaylsis
 #' lst <- anovaVCA(y~(device+lot)/day/run, VCAdata1, by="sample")
 #' # transform list of VCA-objects into required matrix
-#' mat <- getMat.VCA(lst)		# automatically selects "total"
+#' mat <- get_mat(lst)		# automatically selects "total"
 #' mat
 #' # fit all models batch-wise, the best fitting will be used automatically
-#' res <- fit.vfp(model.no=1:10, Data=mat)
+#' res <- fit_vfp(model.no=1:9, Data=mat)
 #' # plot hit and visualize imprecision usign default settings
-#' precisionPlot(res, cutoff=20)
+#' precision_plot(res, cutoff=20)
 #' # without normal distribution at cutoff do
-#' precisionPlot(res, cutoff=20, prob=c(.05, .95), col=c("blue", "red"))
+#' precision_plot(res, cutoff=20, prob=c(.05, .95), col=c("blue", "red"))
 #' # highlight the proportion > cutoff (hit rate) more 
-#' precisionPlot(res, cutoff=20, prob=c(.05, .95), col=c("blue", "red"), alpha2=.5)
+#' precision_plot(res, cutoff=20, prob=c(.05, .95), col=c("blue", "red"), alpha2=.5)
 #' # plot with legend
-#' precisionPlot(res, cutoff=20, prob=c(.05, .95), col=c("blue", "red"), alpha2=.5, Legend=TRUE)
+#' precision_plot(res, cutoff=20, prob=c(.05, .95), col=c("blue", "red"), alpha2=.5, Legend=TRUE)
 #' # use different probabilities and colors
-#' precisionPlot(res, cutoff=20, prob=c(.05, .95), col="black", alpha2=.3)
+#' precision_plot(res, cutoff=20, prob=c(.05, .95), col="black", alpha2=.3)
 #' 
 #' # now using two cutoffs, i.e. with equivocal zone
-#' precisionPlot(	res, cutoff=c(17, 19), prob=c(.05, .95), col=c("mediumblue", "red3"), 
+#' precision_plot(	res, cutoff=c(17, 19), prob=c(.05, .95), col=c("mediumblue", "red3"), 
 #' 					alpha2=.5, HRLine=list(col=c("mediumblue", "red3")))
 #' }
 #' 
 #' @author Andre Schuetzenmeister \email{andre.schuetzenmeister@@roche.com}
 
-precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col=c("blue", "black", "red"), 
+precision_plot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col=c("blue", "black", "red"), 
 		Cutoff=list(), Title=list(), Xlabel=list(), Ylabel=list(), HRLine=list(),
 		Legend=FALSE, nclass=-1,  BG="gray90", digits=3, alpha=.15, alpha2=0, 
 		xlim=NULL, col.grid="white", Nrand=1e6)
@@ -685,11 +687,11 @@ precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col
 	p		<- unique(sort(c(p, prob)))
 	
 	if(Nco == 1)
-		res1	<- deriveCx(vfp, model.no=model.no, cutoff=cutoff, Cx=p)
+		res1	<- derive_cx(vfp, model.no=model.no, cutoff=cutoff, Cx=p)
 	else
 	{
-		res1	<- deriveCx(vfp, model.no=model.no, cutoff=cutoff[1], Cx=p)
-		res2	<- deriveCx(vfp, model.no=model.no, cutoff=cutoff[2], Cx=p)
+		res1	<- derive_cx(vfp, model.no=model.no, cutoff=cutoff[1], Cx=p)
+		res2	<- derive_cx(vfp, model.no=model.no, cutoff=cutoff[2], Cx=p)
 	}
 	# use actual probabilities, in case that mean would < 0 C0.01 cannot be reached, indicate actual Cx-value
 	res1 <- cbind(res1, Actual.p.rounded=round(res1[,"Actual.p"]*100, 2))
@@ -716,7 +718,7 @@ precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col
 	PLT <- par("plt")
 	
 	rect(xlim[1], ylim[1], xlim[2], ylim[2], col=BG, border="white")
-	addGrid(x=pretty(xlim, 20), y=seq(0,1,.05), col=col.grid)
+	add_grid(x=pretty(xlim, 20), y=seq(0,1,.05), col=col.grid)
 	axis(1, at=pretty(xlim, 10), mgp=c(3, .75, 0), col.ticks="gray60")
 	axis(2, las=1, mgp=c(3, .75, 0), col.ticks="gray60")
 	
@@ -750,7 +752,7 @@ precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col
 		h 	<- hist(tmpData, plot=FALSE, n=tmpNclass )
 		h$density <- h$density / (scl * 1.5)			# scale normal distribution to half the height of the plot
 		
-		plot(	h, las=1, xlim=xlim, ylim=ylim, col=as.rgb(col[i], alpha), 
+		plot(	h, las=1, xlim=xlim, ylim=ylim, col=as_rgb(col[i], alpha), 
 				border="white",add=TRUE, freq=FALSE)
 		if(Nco == 1)	
 			idx <- which(h$breaks >= cutoff[1])
@@ -762,7 +764,7 @@ precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col
 		}		
 		
 		for(j in idx)
-			rect(h$breaks[j], 0, h$breaks[j+1], h$density[j], col=as.rgb(col[i], alpha2), border="white")
+			rect(h$breaks[j], 0, h$breaks[j+1], h$density[j], col=as_rgb(col[i], alpha2), border="white")
 	}
 	
 	abline(v=Means, h=prob, col="gray60", lty=2, lwd=2)
@@ -821,9 +823,9 @@ precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col
 	}
 	if(Legend)
 	{
-		Fill 	<- as.rgb(col[1:length(col)], alpha)
+		Fill 	<- as_rgb(col[1:length(col)], alpha)
 		if(alpha2 > 0)
-			Fill <- c(Fill, as.rgb(col[1:length(col)], ifelse(alpha+alpha2>1, 1, alpha+alpha2)))
+			Fill <- c(Fill, as_rgb(col[1:length(col)], ifelse(alpha+alpha2>1, 1, alpha+alpha2)))
 		
 		Legend 	<- c(	paste0("~N(C", formatC(100*prob, format="s", width=3, flag="-"), " ; SD) < Cutoff"),
 				paste0("~N(C", formatC(100*prob, format="s", width=3, flag="-"), " ; SD) > Cutoff") )
@@ -846,7 +848,7 @@ precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col
 		}
 		
 		
-		legend.rm(	x="center", fill=Fill, legend=Legend, y.intersp=2, 
+		legend_rm(	x="center", fill=Fill, legend=Legend, y.intersp=2, 
 				lty=LTY, lwd=LWD, col=COL, bg=BG, 
 				border=c(	rep("white", length(which(!is.na(Fill)))), 
 						rep(BG, length(which(!is.na(Fill))))) )
@@ -862,7 +864,6 @@ precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col
 	
 	invisible(res)
 }
-
 
 
 
@@ -896,6 +897,8 @@ precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col
 #' 
 #' @author Andre Schuetzenmeister \email{andre.schuetzenmeister@@roche.com}
 #' 
+#' @aliases deriveCx
+#' 
 #' @examples 
 #' \dontrun{
 #' # perform variance component analysis
@@ -904,22 +907,22 @@ precisionPlot <- function(	vfp, model.no=NULL, cutoff, prob=c(.05, .5, .95), col
 #' # perform VCA-anaylsis
 #' lst <- anovaVCA(y~(device+lot)/day/run, VCAdata1, by="sample")
 #' # transform list of VCA-objects into required matrix
-#' mat <- getMat.VCA(lst)		# automatically selects "total"
+#' mat <- get_mat(lst)		# automatically selects "total"
 #' mat
 #' # fit all models batch-wise
-#' res <- fit.vfp(model.no=1:10, Data=mat)
+#' res <- fit_vfp(model.no=1:9, Data=mat)
 #' # now search for the C5 concentration
-#' deriveCx(res, start=15, cutoff=20, Cx=0.05, plot=TRUE)
-#' deriveCx(res, start=25, cutoff=20, Cx=0.95, plot=TRUE)
-#' deriveCx(res, start=25, cutoff=20, Cx=0.25, plot=TRUE)
-#' deriveCx(res, start=25, cutoff=20, Cx=0.75, plot=TRUE)
+#' derive_cx(res, start=15, cutoff=20, Cx=0.05, plot=TRUE)
+#' derive_cx(res, start=25, cutoff=20, Cx=0.95, plot=TRUE)
+#' derive_cx(res, start=25, cutoff=20, Cx=0.25, plot=TRUE)
+#' derive_cx(res, start=25, cutoff=20, Cx=0.75, plot=TRUE)
 #' 
 #' #
 #' p <- c(seq(.01, .12, .01), seq(.15, .85, .05), seq(.88, .99, .01))
-#' system.time(x <- deriveCx(res, Cx=p, cutoff=20))
+#' system.time(x <- derive_cx(res, Cx=p, cutoff=20))
 #' }
 
-deriveCx <- function(vfp, model.no=NULL, start=NULL, cutoff=NULL, Cx=.05, tol=1e-6, plot=FALSE)
+derive_cx <- function(vfp, model.no=NULL, start=NULL, cutoff=NULL, Cx=.05, tol=1e-6, plot=FALSE)
 {
 	stopifnot(is(vfp, "VFP"))
 	stopifnot(is.numeric(cutoff))
@@ -928,7 +931,7 @@ deriveCx <- function(vfp, model.no=NULL, start=NULL, cutoff=NULL, Cx=.05, tol=1e
 	stopifnot(is.numeric(start))
 	if(length(Cx) > 1)
 	{
-		res <- t(sapply(Cx, deriveCx, vfp=vfp, model.no=model.no, start=start, cutoff=cutoff))
+		res <- t(sapply(Cx, derive_cx, vfp=vfp, model.no=model.no, start=start, cutoff=cutoff))
 		res <- cbind(Cx=Cx, res)
 		return(res)
 	}
@@ -989,3 +992,4 @@ deriveCx <- function(vfp, model.no=NULL, start=NULL, cutoff=NULL, Cx=.05, tol=1e
 		}
 	}	
 }
+

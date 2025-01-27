@@ -34,7 +34,7 @@
 )
 }
 \arguments{
-\item{x}{(VFP) object as returned by function 'fit.vfp'}
+\item{x}{(VFP) object as returned by function 'fit_vfp'}
 
 \item{model.no}{(integer) specifying which model to plot, must be one of the fitted models}
 
@@ -78,7 +78,7 @@ of the line representing the fitted variance-function}
 \item{Points}{(list) passed to function \code{\link{points}} controlling how 
 data used to fit a variance function shall be plotted}
 
-\item{Grid}{(list) passed to function \code{\link{addGrid}} controlling the appearance
+\item{Grid}{(list) passed to function \code{\link{add_grid}} controlling the appearance
 of a grid, set to NULL to omit}
 
 \item{Crit}{(list) passed to function \code{\link{legend}} per default used to present
@@ -134,18 +134,18 @@ can be plotted either as lines ('ci.type="lines') or as per default as CI-band.
 library(VCA)
 data(VCAdata1)
 lst <- anovaVCA(y~(device+lot)/day/run, VCAdata1, by="sample")
-mat <- getMat.VCA(lst)		# automatically selects "total"
+mat <- get_mat(lst)		# automatically selects "total"
 mat
 
-res <- fit.vfp(model.no=1:10, Data=mat)
+res <- fit_vfp(model.no=1:9, Data=mat)
 plot(res)
 plot(res, type="cv")
 plot(res, type="cv", ci.type="lines", ci.col="red",
 		Grid=list(col="wheat"), Points=list(pch=2, lwd=2, col="black"))
 
 # same for repeatability
-mat.err <- getMat.VCA(lst, "error")
-res.err <- fit.vfp(1:10, Data=mat.err)
+mat.err <- get_mat(lst, "error")
+res.err <- fit_vfp(1:9, Data=mat.err)
 plot(res.err)
 
 # add predictions to plot, e.g. functional sensitivity
@@ -174,19 +174,19 @@ fits.ip.CA19_9[[1]]
 fits.CA19_9[[1]]
 
 # extract repeatability
-rep.CA19_9 <- getMat.VCA(fits.CA19_9, "error")
+rep.CA19_9 <- get_mat(fits.CA19_9, "error")
 
 # extract reproducibility
-repro.CA19_9 <- getMat.VCA(fits.CA19_9, "total")
+repro.CA19_9 <- get_mat(fits.CA19_9, "total")
 
 # extract intermediate-precision (within-lab)
-ip.CA19_9 <- getMat.VCA(fits.ip.CA19_9, "total")
+ip.CA19_9 <- get_mat(fits.ip.CA19_9, "total")
 
 # fit model (a+bX)^C (model 8) to all three matrices
 
-mod8.repro 	<- fit.vfp(repro.CA19_9, 8)
-mod8.ip		<- fit.vfp(ip.CA19_9, 8)
-mod8.rep		<- fit.vfp(rep.CA19_9, 8)
+mod8.repro 	<- fit_vfp(repro.CA19_9, 8)
+mod8.ip		<- fit_vfp(ip.CA19_9, 8)
+mod8.rep		<- fit_vfp(rep.CA19_9, 8)
 
 # plot reproducibility precision profile first
 # leave enough space in right margin for a legend
@@ -211,7 +211,7 @@ plot(mod8.rep, type="cv", add=TRUE, ci.type="none",
 		Line=list(col="darkorchid3", lwd=3), log="x")
 
 # add legend to right margin
-legend.rm( x="center", pch=15:17, col=c("blue", "deepskyblue", "darkorchid3"),
+legend_rm( x="center", pch=15:17, col=c("blue", "deepskyblue", "darkorchid3"),
 		cex=1.5, legend=c("Reproducibility", "Within-Lab Precision", "Repeatability"),
 		box.lty=0)
 
@@ -225,7 +225,7 @@ plot(mod8.rep, BG="darkgray",
 }
 }
 \seealso{
-\code{\link{fit.vfp}}, \code{\link{predict.VFP}}, \code{\link{predictMean}}
+\code{\link{fit_vfp}}, \code{\link{predict.VFP}}, \code{\link{predict_mean}}
 }
 \author{
 Andre Schuetzemeister \email{andre.schuetzeneister@roche.com}

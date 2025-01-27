@@ -3,16 +3,16 @@
 # predict.VFP is required
 
 export(
-	"as.rgb",
-	"fit.vfp",
+	"as_rgb",
+	"fit_vfp",
 	"print.VFP",
 	"summary.VFP",
 	"plot.VFP",
 	"predict.VFP",
-	"predictMean",
-	"getMat.VCA",
+	"predict_mean",
+	"get_mat",
 	"coef.VFP",
-	"legend.rm",
+	"legend_rm",
 	"powfun2simple",
 	"powfun3",
 	"powfun3simple",
@@ -27,9 +27,14 @@ export(
 	"powfun8",
 	"powfun8simple",
 	"powfun9simple",
-	"conditionHandler",
-	"deriveCx",
-	"precisionPlot"
+	"condition_handler",
+	"derive_cx",
+	"precision_plot",
+	"fit_ep17",
+	"predict_model_ep17",
+	"add_grid",
+	"signif2",
+	"legend_rm"
 )
 
 ### Packages which are imported (appearing in the Description->Imports enumeration)
@@ -38,6 +43,7 @@ import(
 	"graphics",
 	"grDevices",
 	"stats",
+	"methods",
 	"gnm"
 )
 
@@ -46,7 +52,7 @@ importFrom("MASS", "gamma.dispersion")
 importFrom("utils", "capture.output")
 importFrom("utils", "tail")
 importFrom("VCA", "stepwiseVCA")
-importFrom("methods", "is")
+importFrom("VCA", "getIP.remlVCA")
 
 ### exported classes
 #

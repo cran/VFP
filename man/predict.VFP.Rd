@@ -39,7 +39,7 @@ possible are "vc" = variance, "sd"=standard deviation, "cv"=coefficient of varia
 
 \item{use.log}{(logical) TRUE = X- and Y-axis will be log-transformed}
 
-\item{...}{additional parameters passed forward to function \code{\link{predict.gnm}}}
+\item{...}{additional parameters passed forward to function \code{\link[gnm]{predict.gnm}}}
 }
 \value{
 (data.frame) with numeric variables:\cr
@@ -61,8 +61,8 @@ other scales, if required.
 library(VCA)
 data(VCAdata1)
 lst <- anovaVCA(y~(device+lot)/day/run, VCAdata1, by="sample")
-mat <- getMat.VCA(lst)		# automatically selects "total"
-res <- fit.vfp(model.no=1:10, Data=mat)
+mat <- get_mat(lst)		# automatically selects "total"
+res <- fit_vfp(model.no=1:9, Data=mat)
 predict(res)
 predict(res, dispersion=0.95)
 }
