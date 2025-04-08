@@ -11,7 +11,7 @@ predict_mean(
   model.no = NULL,
   alpha = 0.05,
   newdata = NULL,
-  tol = 1e-04,
+  tol = 1e-06,
   ci = TRUE,
   ...
 )

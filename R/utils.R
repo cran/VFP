@@ -3,6 +3,106 @@
 # Author: schueta6
 ###############################################################################
 
+#' Determine Monotony of Vector.
+#' 
+#' @param x		(numeric) vector
+#' 
+#' @return 1 if monotonically increasing, -1 if monotonically decreasing, otherwise,
+#'         a vector of 1 or -1 indicating increasing or decreasing status
+#' 
+#' @author Andre Schuetzenmeister \email{andre.schuetzenmeister@@roche.com}
+#' 
+#' @examples 
+#' x1 <- seq(-1, 1, .1)
+#' x2 <- seq(1, -1, -.1)
+#' y <- x1^2 / 2 + x1/3 - 5
+#' get_mon(x1)
+#' get_mon(x2)
+#' get_mon(y)
+
+get_mon <- function(x) {
+	if(all(x == cummax(x)))	{					# monotonically increasing
+		return(1)
+	} else if(all(-1 * x == cummax(-1 * x))) {	# monotonically decreasing
+		return(-1) 
+	} else {
+		return(sign(diff(x)))
+	}
+}
+
+
+#' Select the Best Fitting Model.
+#' 
+#' In case the user has not specified a specific model out of multiple fitted
+#' models the one with the lowes AIC value will be selected. If multiple models
+#' have the same AIC the one with the lowes complexity will be chosen. 
+#' 
+#' @param object		(object) of class "VFP"
+#' @param model.no		(integer) specifying a fitted model stored in 'object'
+#' @param cpx			(integer) vector specifying the order of complexity
+#' 						used to select the less complex model when multiple, 
+#'                      identical AIC values occur, taken from the fitted object
+#' 						or c(1, 2, 3, 9, 5, 4, 7, 6, 8) is used if not specified
+#' 
+#' @return (integer) index of selected model in 'object$Models' or 'object$AIC'
+#' 
+#' @author Andre Schuetzenmeister \email{andre.schuetzenmeister@@roche.com}
+#' 
+#' @examples 
+#' \donttest{
+#' library(VCA)
+#' data(VCAdata1)
+#' lst <- anovaVCA(y~(device+lot)/day/run, VCAdata1, by="sample")
+#' mat <- get_mat(lst)		# automatically selects "total"
+#' res <- fit_vfp(model.no=1:9, Data=mat)
+#' get_model(res)
+#' }
+
+get_model <- function(object, model.no = NULL, cpx=NULL) {
+	
+	stopifnot(is(object, "VFP"))
+	stopifnot(model.no %in% 1:9)
+	
+	if(is.null(cpx)) {
+		if(is.null(object$complexity)) {
+			cpx <- c(1, 2, 3, 9, 5, 4, 7, 6, 8)
+		} else {
+			cpx <- object$complexity
+		}
+	}
+	
+	cpx <- paste0("Model_", cpx)
+	
+	if (is.null(model.no)) {				# automatically determine best fitting model
+		AIC <- object$AIC
+		nam <- names(AIC)
+		if("Model_10" %in% nam)
+			AIC <- AIC[-which(nam == "Model_10")]
+		idx <- which(AIC == min(AIC, na.rm=TRUE))
+		if(length(idx) > 1) {
+			mods <- nam[idx]
+			bmod <- cpx[which(cpx %in% mods)[1]]
+			num  <- which(names(AIC) == bmod)
+			attr(num, "model") <- bmod
+		} else {
+			num <- idx	
+			attr(num, "model") <- nam[idx]
+		}
+		
+		AIC <- NULL
+	} else {
+		models <- sub("Model_", "", names(object$RSS))
+		if(!model.no %in% models)
+			stop("Specified model ", paste0("'", model.no, "'"),
+					" is not among fitted models: ", 
+					paste(models, collapse=", "),"!")
+		else {
+			num <- which(models == model.no)
+			attr(num, "model") <- paste0("Model_", model.no)
+		}
+	}
+	num
+}
 
 
 #' Condition-Handling Without Losing Information.
@@ -157,58 +257,88 @@ get_mat <- function(obj, vc=1)
 
 
 
-
-
 #' Adapted Version of Function 'signif'
 #' 
 #' This function adapts base-function \code{\link{signif}}
 #' by always returning integer values in case the number of
 #' requested significant digits is less than the the number of
-#' digits in front of the decimal separator.
+#' digits in front of the decimal separator. In case of -Inf, Inf,
+#' NA, and NaN the same value will be returned.
 #' 
 #' @param x			(numeric) value to be rounded to the desired number
 #' 					of significant digits
 #' @param digits	(integer) number of significant digits
-#' @param force		(logical) TRUE = force the return value to have at least 4 significant
-#' 					digits, i.e. to integers with less digits zeros will be appended after
-#' 					the decimal separator, otherwise the return value will be casted from
-#' 					character to numeric
+#' @param as.char	(logical) TRUE = return character string, otherwise,
+#' 					a numeric value will be returned
 #' @param ...		additional parameters
 #' 
-#' @return 	number with 'digits' significant digits, if 'force=TRUE' "character" objects will be
+#' @return 	number with 'digits' significant digits, if 'as.char=TRUE' "character" objects will be
 #' 			returned otherwise objects of mode "numeric"
 #' 
 #' @aliases Signif
 #' 
 #' @author Andre Schuetzenmeister \email{andre.schuetzenmeister@@roche.com}
+#' 
+#' @examples 
+#' identical(signif2(1.23456, 4), "1.235")
+#' identical(signif2(-1.23456, 4), "-1.235")
+#' identical(signif2(0.123456, 5), "0.12346")
+#' identical(signif2(-12.5678, digits=2), "-13")
+#' identical(signif2(0.490021, digits=4), "0.4900") 
+#' identical(signif2(c(1.203, 4.56), digits=3, as.char=FALSE), c(1.20, 4.56))
+#' identical(signif2(c(1.203, 4.56), digits=3, as.char=TRUE), c("1.20", "4.56"))
+#' identical(signif2(0.003404, 3), "0.00340")
+#' identical(signif2(0.00034004, 4), "0.0003400")
+#' identical(signif2(12345.67, 4), "12346")
+#' identical(signif2(12345.67, 3), "12346")
+#' identical(signif2(123456, 3), "123456")
 
-signif2 <- function(x, digits=4, force=TRUE, ...)
+signif2 <- function(x, digits=4, as.char=TRUE, ...)
 {
+
 	call 	<- match.call()
-	manyX 	<- call$manyX
-	if(is.null(manyX))
-		manyX <- FALSE
 	stopifnot(is.numeric(x))
 	if(length(x) > 1)
-		return(sapply(x, signif2, digits=digits, force=force, manyX=TRUE))
-	
-	if(!manyX && "coef.gnm" %in% class(x))		# assign name to single gnm-coefficient
-	{
-		x <- as.numeric(x)
-		names(x) <- "beta1"
-	}
+		return(sapply(x, signif2, digits=digits, as.char=as.char))
+	if(x %in% c(-Inf, NA, NaN, Inf))
+		return(x)
+	sgn		<- sign(x)
+	x		<- abs(x)
+	# number of digits left of comma
 	Ndbc	<- nchar(substr(as.character(x), 1, regexpr("\\.", as.character(x))-1))
-	if(x %% 1 == 0)
-		Ndbc <- nchar(as.character(x))
+	if(Ndbc == 0) {
+		Ndbc <- nchar(x)
+	} else if(Ndbc==1 && substr(x, 1, 1) == "0") {
+		Ndbc <- 0	
+	}
 	x 		<- signif(x, ifelse(Ndbc > digits, Ndbc, digits))
 	NcX		<- nchar(x)
 	comma	<- grepl("\\.", x)
-	if(comma)
-		NcX <- NcX - 1
-	if(NcX < digits)
+	if(comma) {
+		if(Ndbc > 0)
+			NcX <- NcX - 1
+		else { 							
+			x2  <- sub("0.", "", x)
+			Nz  <- regexpr("^[0]+", x2)
+			if(Nz > -1){					# non-significant zeros right of comma
+				NcX <- NcX - (2 + attr(Nz, "match.length"))
+			} else {
+				NcX <- NcX - 2
+			}
+		}
+	}
+	
+	if(NcX < digits) {
 		x <- paste0(x, ifelse(comma, "", "."), paste(rep(0, digits-NcX), collapse=""))
-	if(!force)
+	}
+	if(sgn == -1) {
+		x <- paste0("-", x)
+	}
+	if(as.char) {
+		x <- as.character(x)
+	} else {
 		x <- as.numeric(x)
+	}
 	x
 }
 

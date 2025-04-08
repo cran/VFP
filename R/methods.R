@@ -4,7 +4,43 @@
 ###############################################################################
 
 
+#' Residuals Method for Objects of Class 'VFP'.
+#' 
+#' @param object       (object) of class 'VFP'
+#' @param model.no     (integer) model number to be use, if not specified the
+#'                     best fitting model will be used
+#' @param type         (character) one of "vc" (variance), "sd" or "cv"
+#'                     on which scale residuals shall be determined
+#' @param ...          additional arguments
+#'
+#' @author Andre Schuetzenmeister \email{andre.schuetzenmeister@@roche.com}
+#' @examples
+#' \donttest{
+#' library(VCA)
+#' data(CA19_9)
+#' fits.CA19_9 <- anovaVCA(result~site/day, CA19_9, by="sample")
+#' # extract repeatability
+#' mat.CA19_9 <- get_mat(fits.CA19_9, "error")
+#' res.CA19_9 <- fit_vfp(mat.CA19_9, 1:9)
+#' # default is on variance scale
+#' residuals(res.CA19_9)
+#' # residuals on cv scale for model 6
+#' resid(res.CA19_9, model.no=6, type="cv")
+#' }
 
+residuals.VFP <- function(object, model.no=NULL, type=c("vc", "sd", "cv"), ...) {
+	
+	type 	<- match.arg(type[1], choices=c("vc", "cv", "sd"))
+	num 	<- get_model(object, model.no)			# index among fitted models
+	val     <- switch(type,
+			     vc = object$Data[,"VC"],
+				 sd = sqrt(object$Data[,"VC"]),
+				 cv = 100 * sqrt(object$Data[,"VC"]) / object$Data[,"Mean"])
+	prd  <- predict(object, model.no=model.no, type=type)$Fitted
+	res  <- val - prd
+	names(res) <- paste0(toupper(type), "res_", signif2(object$Data[,"Mean"], 6))
+	res
+}
 
 
 
@@ -42,7 +78,7 @@ summary.VFP <- function(object, model.no = NULL, digits = 4,
 		return(NA)
 	}
 	AIC 	<- object$AIC
-	num 	<- which(AIC == min(AIC))[1]			# index
+	num 	<- get_model(object, model.no)			# index among fitted models
 	AIC 	<- NULL
 	type 	<- match.arg(type[1], choices = c("simple", "complex"))
 	
@@ -148,24 +184,10 @@ print.VFP <- function(x, model.no = NULL, digits = 4, ...) {
 		warning("There is no fitted VFP-model to print!")
 		return(NA)
 	}
+
+	num0        <- is.null(model.no)
+	num         <- get_model(x, model.no)
 	
-	if (is.null(model.no)) {				# automatically determine best fitting model
-		AIC 	<- x$AIC
-		nam 	<- names(AIC)
-		if("Model_10" %in% nam)
-			AIC <- AIC[-which(nam == "Model_10")]
-		num 	<- which(AIC== min(AIC))[1]
-		AIC 	<- NULL
-		num0	<- TRUE
-	} else {
-		num0 	<- FALSE
-		models 	<- sub("Model_", "", names(x$RSS))
-		if(!model.no %in% models)
-			stop("Specified model ", paste0("'", model.no, "'")," is not among 
-							fitted models: ", paste(models, collapse = ", "),"!")
-		else
-			num <- which(models == model.no)
-	}
 	model 		<- names(x$RSS[num])
 	model.no	<- as.numeric(sub("Model_", "", model))
 	form 		<- x$Formulas[num]
@@ -215,22 +237,8 @@ coef.VFP <- function(object, model.no = NULL, ...) {
 		warning("There is no fitted VFP-model to extract coefficients from!")
 		return(NA)
 	}
-	
-	if (is.null(model.no)) {			# automatically determine best fitting model
-		AIC <- object$AIC
-		nam <- names(AIC)
-		if("Model_10" %in% nam)
-			AIC <- AIC[-which(nam == "Model_10")]
-		num <- which(AIC == min(AIC))[1]
-		AIC <- NULL
-		message(paste0("No 'model.no' specied! Best-fitting model assumed ('",names(object$RSS)[num],"')!"))
-	} else {
-		models <- sub("Model_", "", names(object$RSS))
-		if (!model.no %in% models)
-			stop("Specified model ", paste0("'", model.no, "'")," is not among fitted models: ", paste(models, collapse = ", "),"!")
-		else
-			num <- which(models == model.no)
-	}
+
+	num   <- get_model(object, model.no)
 	
 	model <- names(object$RSS[num])
 	
@@ -308,7 +316,7 @@ bt_coef <- function(object, K = NULL, signJ = NULL, model = NULL, ...) {
 		coeffs	<- c(coef1, coef2, coef3)
 		names(coeffs) <- c("beta1", "beta2", "J")
 	} else if(model == 8) {
-		coef3	<-signJ*((0.1+10*exp(coeffs0[3]))/(1+exp(coeffs0[3])))
+		coef3	<- signJ*((0.1+10*exp(coeffs0[3]))/(1+exp(coeffs0[3])))
 		coef1 	<- exp(coeffs0[1]/coef3)
 		coef2	<- coef1*(exp(coeffs0[2])-cutval)/max(object$data[,"Mean"])
 		coeffs	<- c(coef1, coef2, coef3)
@@ -452,23 +460,8 @@ predict.VFP <- function(object, model.no = NULL, newdata = NULL, alpha = .05,
 	
 	type 		<- match.arg(type[1], choices=c("vc", "sd", "cv"))
 	CI.method	<- match.arg(CI.method[1], choices=c("t", "normal", "chisq"))
-	
-	if (is.null(model.no)) {				# automatically determine best fitting model
-		AIC <- object$AIC
-		nam <- names(AIC)
-		if("Model_10" %in% nam)
-			AIC <- AIC[-which(nam == "Model_10")]
-		num <- which(AIC == min(AIC, na.rm=TRUE))[1]
-		AIC <- NULL
-	} else {
-		models <- sub("Model_", "", names(object$RSS))
-		if(!model.no %in% models)
-			stop("Specified model ", paste0("'", model.no, "'"),
-					" is not among fitted models: ", 
-					paste(models, collapse=", "),"!")
-		else
-			num <- which(models == model.no)
-	}
+
+	num <- get_model(object, model.no)
 	
 	if (is.null(dispersion)) {
 		dispersion <- 1
@@ -656,7 +649,8 @@ predict.VFP <- function(object, model.no = NULL, newdata = NULL, alpha = .05,
 #' }
 
 predict_mean <- function(obj, type = c("vc", "sd", "cv"), model.no = NULL, 
-		alpha = .05, newdata = NULL, tol = 1e-4, ci = TRUE, ...) {
+		alpha = .05, newdata = NULL, tol = 1e-6, ci = TRUE, ...) {
+
 	call 	<- match.call()
 	CI.type	<- call$CI.type
 	if (is.null(CI.type))
@@ -665,24 +659,9 @@ predict_mean <- function(obj, type = c("vc", "sd", "cv"), model.no = NULL,
 	stopifnot(!is.null(newdata))
 	stopifnot(is(obj, "VFP"))
 	type <- match.arg(type[1], choices=c("vc", "sd", "cv"))
-	
-	if (is.null(model.no)) {				# automatically determine best fitting model
-		AIC <- obj$AIC
-		nam <- names(AIC)
-		if("Model_10" %in% nam)
-			AIC <- AIC[-which(nam == "Model_10")]
-		num <- which(AIC== min(AIC))[1]
-		AIC <- NULL
-	} else {
-		models <- sub("Model_", "", names(obj$RSS))
-		if(!model.no %in% models) {
-			stop("Specified model ", paste0("'", model.no, "'"),
-					" is not among fitted models: ", 
-					paste(models, collapse=", "),"!")
-		} else {
-			num <- which(models == model.no)
-		}
-	}
+
+	# determine best model
+	num <- get_model(obj, model.no)
 	
 	model <- as.numeric(sub("Model_", "", names(obj$RSS[num])))	
 	
@@ -694,6 +673,7 @@ predict_mean <- function(obj, type = c("vc", "sd", "cv"), model.no = NULL,
 	
 	### start bisection algorithm to find mean for given vc, sd or cv value
 	
+	# multiple variability values for which mean shall be read off the fitted model
 	if (length(newdata) > 1) {
 		return(as.data.frame(t(sapply(newdata, function(x) predict_mean(obj=obj, newdata=x, type=type, tol=tol, model.no=model, ci=ci)))))
 	}
@@ -710,23 +690,27 @@ predict_mean <- function(obj, type = c("vc", "sd", "cv"), model.no = NULL,
 			sd = "SD",
 			cv = "CV")
 	
-	# narrow search space, of special interst for functions with multiple intersections with target variance
+	# narrow search space, of special interest for functions with multiple intersections with target variance
 	
 	# iteratively increase range of X-values if necessary
 	for (i in 1:5) {	
-		cand	<- seq(Min, Max, length.out = 100)
+		cand	<- seq(Min, Max, length.out = 1000)
 		pred 	<- predict(obj, model.no = model.no, type = type, newdata = cand)
 		
-		above	<- switch(	CI.type,
-				estimate= which(pred$Fitted > newdata),
-				LCL 	= which(pred$LCL 	> newdata),
-				UCL		= which(pred$UCL 	> newdata)
+		# running above Y-value? (logical)
+		above0	<- switch(	CI.type,
+					estimate= pred$Fitted > newdata,
+					LCL 	= pred$LCL 	  > newdata,
+					UCL		= pred$UCL 	  > newdata
 		)
+		# determine index from logical values
+		above <- which(above0)
+	
 		below	<- switch(	CI.type,
-				estimate= which(pred$Fitted < newdata),
-				LCL 	= which(pred$LCL 	< newdata),
-				UCL	  	= which(pred$UCL 	< newdata)
-		)	
+					estimate= which(pred$Fitted < newdata),
+					LCL 	= which(pred$LCL 	< newdata),
+					UCL	  	= which(pred$UCL 	< newdata)
+		)			
 		
 		if ((length(above) == 0 || length(below) == 0) ) {
 			Max <- Max * 10
@@ -735,53 +719,23 @@ predict_mean <- function(obj, type = c("vc", "sd", "cv"), model.no = NULL,
 			break
 		}
 	}
-	
-	if (CI.type == "estimate" && (length(above) == 0 || length(below) == 0) ) {
+
+	if(length(above) == 0 || length(below) == 0)  {#if (CI.type == "estimate" && (length(above) == 0 || length(below) == 0) ) {
 		message(paste0("No intersection with variance-function found for 
-								specified Y-value up to X=",Max,"!"))
+								specified Y-value up to X =", Max," (CI.type = ",CI.type,")!"))
 		res <- data.frame(Mean = NA, Y = newdata, Diff = NA, LCL = NA, UCL = NA)
 		colnames(res)[2] <- Type
 		return(res)
 	}
-	
-	if (length(above) == 0)
-		above <- NULL
-	if (length(below) == 0)
-		below <- NULL
-	
-	if (!is.null(above)) {
-		above1 	<- above[ -length(above)]	# predecessor
-		above2 	<- above[2:length(above)]	# successor
-	}
-	if (!is.null(below)) {
-		below1 	<- below[ -length(below)]	# predecessor
-		below2 	<- below[2:length(below)]	# successor
-	}
-	
-	suppressWarnings(
-			if (type == "cv") {			
-						if (!is.null(above)) {
-							ind1	<- min(which(above1+1 != above2))
-							Min 	<- cand[ind1]
-						}
-						if (!is.null(below)) {
-							ind2	<- min(below)
-							Max		<- cand[ind2]
-						}
-					} else {
-						if (!is.null(above)) {
-							ind1	<- min(above)
-							Max 	<- cand[ind1]
-						}
-						if (!is.null(below)) {
-							ind2	<- min(which(below1+1 != below2))
-							Min 	<- cand[ind2]
-						}
-					}
-	)
-	
-	lower <- .Machine$double.eps*10				# to avoid infinite loops if solution is close to zero
-	upper <- Max
+
+	# determine intersection function with given Y-value (newdata)
+
+	dif <- diff(above0)							
+	idx <- min(which(dif != 0))		# first intersection
+	dcs <- dif[idx] == -1			# 1 = below -> above, -1 = above -> below (dcs = decreasing)
+
+	lower <- cand[idx]				# to avoid infinite loops if solution is close to zero
+	upper <- cand[idx + 1]			#Max
 	conc  <- lower + diff(c(lower, upper))/2
 	best  <- c(Est = Inf, Diff = Inf)
 	
@@ -799,31 +753,19 @@ predict_mean <- function(obj, type = c("vc", "sd", "cv"), model.no = NULL,
 		if (Diff < best["Diff"])							# remember best fit in case of non-convergence
 			best <- c(Est = conc, Diff = Diff)
 		
-		if ( pred < newdata && type == "cv" ||
-				pred > newdata && type != "cv") {
+		if ( pred < newdata && dcs || pred > newdata && !dcs) { 
 			upper 	<- conc
 			conc 	<- conc - (conc - lower) / 2
 		}
-		if ( pred < newdata && type != "cv" ||
-				pred > newdata && type == "cv") {
+		if ( pred < newdata && !dcs || pred > newdata && dcs) {
 			lower 	<- conc
 			conc 	<- conc + (upper-conc) / 2
 		}
 		
-		if (Diff < tol || abs(diff(c(lower, upper))) < tol0 * lower) {		     #.Machine$double.eps)
+		if (Diff < tol || abs(diff(c(lower, upper))) < tol0 * lower) {		    #.Machine$double.eps)
 			if (Diff >= tol)	{											    # not converged
-				if ( (type == "cv" && is.null(below)) || 
-						(type != "cv" && is.null(above)) ) {
-					message("Upper bound of the CI could not be determined, return max(X-value)!")
-					conc <- Max
-				} else if ( (type == "cv" && is.null(above)) || (type != "cv" && is.null(below)) ) {
-					message("Lower bound of the CI could not be determined, return min(X-value)!")
-					conc <- Min	
-				} else {
-					message("Convergence criterion not met, return best approximation!")
-					conc <- best["Est"]
-				}
-				
+				message("Convergence criterion not met, return best approximation!")
+				conc <- best["Est"]
 				Diff <- best["Diff"]
 			}
 			break
@@ -833,19 +775,22 @@ predict_mean <- function(obj, type = c("vc", "sd", "cv"), model.no = NULL,
 	res <- data.frame(Mean=conc, Yvalue=newdata, Diff=Diff)
 	
 	if (ci) {
-		# CI for prediction derived from CI of variance at prediction
+		# CI for prediction derived from CI of variance at prediction, i.e.
+		# Idea: Where does the horizontal line at y=newdata intersect with lower and
+		# upper bounds of the pointwise defined confidence-band?
 		LCL <- UCL <- NULL
 		
 		if (CI.type == "estimate") {
-			LCL	<- predict_mean(obj, model.no = model.no, newdata = newdata, 
+			LCL	<- predict_mean(obj, model.no = model.no, newdata = newdata, 	# call for lower bound of CI-band
 					alpha = alpha, CI.type = "LCL", type = type)$Mean
-			UCL	<- predict_mean(obj, model.no = model.no, newdata = newdata, 
+			UCL	<- predict_mean(obj, model.no = model.no, newdata = newdata, 	# call for upper bound of CI-band
 					alpha = alpha, CI.type = "UCL", type = type)$Mean
-			
-			if (LCL < UCL)						# on variance-scale function is increasing on CV-scale decreasing
-				CI  <- c(LCL=LCL, UCL=UCL)
-			else
-				CI <- c(LCL=UCL, UCL=LCL)
+
+			if(!dcs) {		# increasing form -> UCL < LCL -> change values
+				CI <- c(LCL = UCL, UCL = LCL)
+			} else {
+				CI <- c(LCL = LCL, UCL = UCL)
+			}
 		}
 		
 		res <- data.frame(Mean=conc, Yvalue=newdata, Diff=Diff)

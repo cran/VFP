@@ -1,3 +1,20 @@
+Version 1.4.4
+-------------
+- bug fixed that multiple fitted models with identical AIC lead to multiple formulas
+  and fit statistics added to the plot
+- function 'get_model' added implementing the selection of the best model in case
+  of identical AIC for multiple models, sequence of complexity can be adjusted
+  in function 'fit_vfp' using parameter 'cpx'
+- in function 'predict_mean' algorithm to determine intersection refined
+- in 'predict_mean' when specified Y-value for which X-value shall be determined
+  does not intersect with variance function NA is returned instead of MIN or MAX 
+  X-Value to better reflect non-convergence of the algorithm
+- unit-test TC15.predictMean adapted to better quality results and to NA instead
+  of max X-value in case of no intersection of variance function with Y-value
+- bug fixed in 'signif2' returning x if this is among -Inf, NA, NaN, Inf 
+- residuals method added for objects of class 'VFP'
+
+
 Version 1.4.3
 -------------
 - code was refactored to comply with tidyverse style guide (not 100 percent)

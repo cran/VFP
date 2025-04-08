@@ -256,9 +256,9 @@ TF015.predictMean <- function(x)
 		fit.all.models  <- fit.vfp(MultiLotReproResults, model.no=1:9)
 	}
 	res <- predictMean(fit.all.models, model.no=6, type="cv", newdata=4.2) 
-	checkEquals(res$Mean, 15.08867, tolerance=1e-6)
-	checkEquals(res$LCL,  6.253166, tolerance=1e-6)
-	checkEquals(res$UCL,  9272564, tolerance=1e-6)				# now upper bound found, max X-value returned with message
+	checkEquals(res$Mean, 15.06991, tolerance=1e-6)
+	checkEquals(res$LCL,  6.254018, tolerance=1e-6)
+	checkTrue(is.na(res$UCL))		# no upper bound found, NA is returned
 }
 
 #* **target getMat.VCA
@@ -318,7 +318,8 @@ TF018.predictMean <- function(x)
 			next
 		pred <- predict(fit.all.models, model.no=i,  type="cv", newdata=x0)$Fitted
 		x1	 <- predictMean(fit.all.models, model.no=i, newdata=pred, type="cv", tol=1e-6)
-		#print(cbind(X0=x0, pred=round(unlist(x1$Mean), 3)))
+		apply(cbind(X0=x0, pred=round(unlist(x1$Mean), 3)), 1, 
+				function(x) checkEquals(as.numeric(x[1]), as.numeric(x[2])))
 	}
 }
 
@@ -435,3 +436,48 @@ TF024.getMat.VCA.REML_sequences <- function()
 	checkEquals(as.numeric(mat0[,"Mean"]), mat1[,"Mean"])
 	checkEquals(as.numeric(mat0[,"DF"]),   mat1[,"DF"])
 }
+
+
+#* **target predictMean
+#* **riskid RA04
+#* **funid Fun106
+#* **desc Predict mean value at cv where precision profile is increasing at low concentrations.
+
+TF025.predict_mean <- function() {
+	load("./data/data_multiple_models.Rdata")
+	pp  <- fit_vfp(dat.mult_best, 1:9)
+	res <- predict_mean(pp, type="cv", newdata=3.5) 
+	checkEquals(as.numeric(res$Mean), 4.99833, tol=1e-6)
+}
+
+
+#* **target plot.VFP
+#* **riskid RA02
+#* **funid Fun102
+#* **desc Will multiple models with identical AIC lead overpopulating plot legends?
+
+TF026.get_model.one_model_only <- function() {
+	load("./data/data_multiple_models.Rdata")
+	pp <- fit_vfp(dat.mult_best, 1:9)
+	print(pp$AIC)
+	checkTrue(length(get_model(pp)) == 1)
+}
+
+
+#* **target plot.VFP
+#* **riskid RA02
+#* **funid Fun102
+#* **desc Do NaN values lead to an error in plot.VFP? Situation occurs e.g. when fitting models to only 2 samples. Adressing ADO-ticket 13232.
+
+TF027.signif2.rounding_impossible <- function() {
+	load("./data/data_2samples.Rdata")
+	pp <- fit_vfp(dat.2samples, model.no=1:9)
+	print(pp$AIC)
+	# should not throw an error
+	checkTrue(!is(plot(pp, model.no=9, type="cv"), "try-error"))
+}
+
+
+
+
+

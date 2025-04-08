@@ -20,8 +20,8 @@
   \tabular{ll}{
     Package: \tab VFP\cr
     Type: \tab Package \cr
-    Version: \tab 1.4.3 \cr
-    Date: \tab 2025-01-27\cr
+    Version: \tab 1.4.4 \cr
+    Date: \tab 2025-04-08\cr
     License:  \tab GPL (>=3) \cr
     LazyLoad: \tab yes \cr
   }

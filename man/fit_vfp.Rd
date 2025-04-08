@@ -17,6 +17,7 @@ fit_vfp(
   col.sd = NULL,
   col.cv = NULL,
   minVC = NA,
+  cpx = c(1, 2, 3, 9, 5, 4, 7, 6, 8),
   ...
 )
 }
@@ -69,6 +70,12 @@ Note that column "col.var" must nevertheless be set
 zero, defaults to NA, which results in removing
 these observations; could also be set to the smallest
 possible positive double (\code{.Machine$double.eps})}
+
+\item{cpx}{(integer) vector specifying the order of complexity
+   used to select the less complex model when multiple, 
+identical AIC values occur. This will be relevant when
+   no specific model is selected and the best fitting model
+   shall be used.}
 
 \item{...}{additional parameters passed forward, e.g. 'vc' of
 function \code{\link{get_mat}} for selecting a

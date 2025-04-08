@@ -214,7 +214,8 @@ plot.VFP <- function(	x, model.no=NULL, type=c("vc", "sd", "cv"), add=FALSE,
 	on.exit(suppressWarnings(par(ask=FALSE)))
 	
 	aic 	<- sort(obj$AIC)
-	num 	<- which(obj$AIC== aic[1])
+	#num 	<- which(obj$AIC== aic[1])
+	num     <- get_model(x, model.no)
 	models 	<- sub("Model_", "", names(obj$RSS))
 	
 	if(!is.null(model.no))				

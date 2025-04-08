@@ -14,16 +14,30 @@
 
 .onLoad<- function(libname, pkgname)
 {
-	fit.vfp           <<- fit_vfp
-	fit.EP17          <<- fit_ep17
-	predict.modelEP17 <<- predict_model_ep17
-	predictMean       <<- predict_mean
-	deriveCx          <<- derive_cx
-	precisionPlot     <<- precision_plot
-	addGrid           <<- add_grid
-	getMat.VCA        <<- get_mat
-	Signif            <<- signif2
-	legend.rm         <<- legend_rm
+#	fit.vfp           <<- fit_vfp
+#	fit.EP17          <<- fit_ep17
+#	predict.modelEP17 <<- predict_model_ep17
+#	predictMean       <<- predict_mean
+#	deriveCx          <<- derive_cx
+#	precisionPlot     <<- precision_plot
+#	addGrid           <<- add_grid
+#	getMat.VCA        <<- get_mat
+#	Signif            <<- signif2
+#	legend.rm         <<- legend_rm
+	
+	
+	assign("fit.vfp",           fit_vfp,            envir=parent.env(environment()))
+	assign("fit.EP17",          fit_ep17,           envir=parent.env(environment()))
+	assign("predict.modelEP17", predict_model_ep17, envir=parent.env(environment()))
+	assign("predictMean",       predict_mean,       envir=parent.env(environment()))
+	assign("deriveCx",          derive_cx,          envir=parent.env(environment()))
+	assign("precisionPlot",     precision_plot,     envir=parent.env(environment()))
+	assign("addGrid",           add_grid,           envir=parent.env(environment()))
+	assign("getMat.VCA",        get_mat,            envir=parent.env(environment()))
+	assign("Signif",            signif2,            envir=parent.env(environment()))
+	assign("legend.rm",         legend_rm,          envir=parent.env(environment()))
+	
+
 }
 
 
@@ -369,6 +383,11 @@ class(powfun9simple) <- "nonlin"
 #' 						zero, defaults to NA, which results in removing
 #'             			these observations; could also be set to the smallest
 #' 						possible positive double (\code{.Machine$double.eps})
+#' @param cpx			(integer) vector specifying the order of complexity
+#' 						used to select the less complex model when multiple, 
+#'                      identical AIC values occur. This will be relevant when
+#' 						no specific model is selected and the best fitting model
+#' 						shall be used.
 #' @param ...      		additional parameters passed forward, e.g. 'vc' of
 #' 						function \code{\link{get_mat}} for selecting a
 #'             			specific variance component in case of 'Data' being a
@@ -503,8 +522,8 @@ class(powfun9simple) <- "nonlin"
 
 
 fit_vfp <- function(Data, model.no = 1:9, K = 2, startvals = NULL, quiet = TRUE,
-		col.mean = "Mean", col.var = "VC", col.df = "DF",
-		col.sd = NULL, col.cv = NULL, minVC = NA, ...) {
+		col.mean = "Mean", col.var = "VC", col.df = "DF", col.sd = NULL, 
+		col.cv = NULL, minVC = NA, cpx = c(1, 2, 3, 9, 5, 4, 7, 6, 8), ...) {
 	
 	Call <- match.call()
 	stopifnot(model.no %in% 1:10)
@@ -1214,9 +1233,10 @@ fit_vfp <- function(Data, model.no = 1:9, K = 2, startvals = NULL, quiet = TRUE,
 		
 		if(!is.null(res.gnm9))
 		{
-			coeffs       <- bt_coef(res.gnm9, model = 9)#
+			coeffs      <- bt_coef(res.gnm9, model = 9)#
 			AIC[9]      <- res.gnm9$aic
-			Deviance[9]   <- res.gnm9$deviance
+
+			Deviance[9] <- res.gnm9$deviance
 			my.form9simple   <- VC~-1+powfun9simple(Mean)
 			tmp.res     <- condition_handler(gnm(formula = my.form9simple, family = Gamma(link = "identity"), data = Data, weights = pweights,
 							start = coeffs, trace = TRUE, iterMax = 0), file = "./stdout.log")
@@ -1309,7 +1329,8 @@ fit_vfp <- function(Data, model.no = 1:9, K = 2, startvals = NULL, quiet = TRUE,
 			errors = errors,
 			output = output,
 			warnings = warnings,
-			notes = notes)
+			notes = notes,
+			Complexity = cpx)
 	
 	class(res) <- "VFP"
 	

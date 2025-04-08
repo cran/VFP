@@ -5,7 +5,7 @@
 \alias{Signif}
 \title{Adapted Version of Function 'signif'}
 \usage{
-signif2(x, digits = 4, force = TRUE, ...)
+signif2(x, digits = 4, as.char = TRUE, ...)
 }
 \arguments{
 \item{x}{(numeric) value to be rounded to the desired number
@@ -13,22 +13,35 @@ of significant digits}
 
 \item{digits}{(integer) number of significant digits}
 
-\item{force}{(logical) TRUE = force the return value to have at least 4 significant
-digits, i.e. to integers with less digits zeros will be appended after
-the decimal separator, otherwise the return value will be casted from
-character to numeric}
+\item{as.char}{(logical) TRUE = return character string, otherwise,
+a numeric value will be returned}
 
 \item{...}{additional parameters}
 }
 \value{
-number with 'digits' significant digits, if 'force=TRUE' "character" objects will be
+number with 'digits' significant digits, if 'as.char=TRUE' "character" objects will be
 			returned otherwise objects of mode "numeric"
 }
 \description{
 This function adapts base-function \code{\link{signif}}
 by always returning integer values in case the number of
 requested significant digits is less than the the number of
-digits in front of the decimal separator.
+digits in front of the decimal separator. In case of -Inf, Inf,
+NA, and NaN the same value will be returned.
+}
+\examples{
+identical(signif2(1.23456, 4), "1.235")
+identical(signif2(-1.23456, 4), "-1.235")
+identical(signif2(0.123456, 5), "0.12346")
+identical(signif2(-12.5678, digits=2), "-13")
+identical(signif2(0.490021, digits=4), "0.4900") 
+identical(signif2(c(1.203, 4.56), digits=3, as.char=FALSE), c(1.20, 4.56))
+identical(signif2(c(1.203, 4.56), digits=3, as.char=TRUE), c("1.20", "4.56"))
+identical(signif2(0.003404, 3), "0.00340")
+identical(signif2(0.00034004, 4), "0.0003400")
+identical(signif2(12345.67, 4), "12346")
+identical(signif2(12345.67, 3), "12346")
+identical(signif2(123456, 3), "123456")
 }
 \author{
 Andre Schuetzenmeister \email{andre.schuetzenmeister@roche.com}

@@ -1,6 +1,6 @@
 Package: VFP
-Version: 1.4.3
-Date: 2025-01-27
+Version: 1.4.4
+Date: 2025-04-08
 Title: Variance Function Program
 Author: Andre Schuetzenmeister [cre, aut],
   Florian Dufey [aut],
@@ -11,7 +11,7 @@ Authors@R: c(
 			person(given="Florian", family="Dufey", email="florian.dufey@roche.com", role = c("aut")),
 			person(given="Andrea", family="Geistanger", email="andrea.geistanger@roche.com", role = c("ctb"))
 		    )
-Depends: R (>= 3.1.0), gnm
+Depends: R (>= 3.5.0), gnm
 Imports: VCA, MASS, utils, stats, graphics, grDevices, methods
 Suggests: RUnit, knitr, rmarkdown, prettydoc
 Description: 
@@ -24,6 +24,6 @@ License: GPL (>= 2)
 VignetteBuilder: knitr, rmarkdown
 RoxygenNote: 7.2.3
 NeedsCompilation: no
-Packaged: 2025-01-27 08:29:10 UTC; schueta6
+Packaged: 2025-04-08 11:17:03 UTC; schueta6
 Repository: CRAN
-Date/Publication: 2025-01-27 08:50:05 UTC
+Date/Publication: 2025-04-08 12:10:02 UTC

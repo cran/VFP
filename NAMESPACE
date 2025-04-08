@@ -5,12 +5,15 @@
 export(
 	"as_rgb",
 	"fit_vfp",
+	"fit.vfp",
 	"print.VFP",
 	"summary.VFP",
 	"plot.VFP",
 	"predict.VFP",
 	"predict_mean",
+	"predictMean",
 	"get_mat",
+	"getMat.VCA",
 	"coef.VFP",
 	"legend_rm",
 	"powfun2simple",
@@ -29,12 +32,21 @@ export(
 	"powfun9simple",
 	"condition_handler",
 	"derive_cx",
+	"deriveCx",
 	"precision_plot",
+	"precisionPlot",
 	"fit_ep17",
+	"fit.EP17",
 	"predict_model_ep17",
 	"add_grid",
+	"addGrid",
 	"signif2",
-	"legend_rm"
+	"Signif",
+	"legend_rm",
+	"legend.rm",
+	"get_mon",
+	"get_model",
+	"residuals.VFP"
 )
 
 ### Packages which are imported (appearing in the Description->Imports enumeration)
@@ -64,3 +76,4 @@ S3method(summary, VFP)
 S3method(predict, VFP)
 S3method(plot, VFP)
 S3method(coef, VFP)
+S3method(residuals, VFP)
